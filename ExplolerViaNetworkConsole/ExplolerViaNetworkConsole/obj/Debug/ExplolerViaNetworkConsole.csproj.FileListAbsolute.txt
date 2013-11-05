@@ -7,3 +7,9 @@ D:\Univer\07 семестр\Visual Studio\ExplolerViaNetworkConsole\ExplolerViaN
 c:\Users\tuxrp_000\Documents\GitHub\course_web\ExplolerViaNetworkConsole\ExplolerViaNetworkConsole\bin\Debug\ExplolerViaNetworkConsole.exe.config
 c:\Users\tuxrp_000\Documents\GitHub\course_web\ExplolerViaNetworkConsole\ExplolerViaNetworkConsole\obj\Debug\ExplolerViaNetworkConsole.exe
 c:\Users\tuxrp_000\Documents\GitHub\course_web\ExplolerViaNetworkConsole\ExplolerViaNetworkConsole\obj\Debug\ExplolerViaNetworkConsole.pdb
+D:\Sharing\github\gahara\course_web\ExplolerViaNetworkConsole\ExplolerViaNetworkConsole\bin\Debug\ExplolerViaNetworkConsole.exe.config
+D:\Sharing\github\gahara\course_web\ExplolerViaNetworkConsole\ExplolerViaNetworkConsole\obj\Debug\ExplolerViaNetworkConsole.exe
+D:\Sharing\github\gahara\course_web\ExplolerViaNetworkConsole\ExplolerViaNetworkConsole\obj\Debug\ExplolerViaNetworkConsole.pdb
+D:\Sharing\github\gahara\course_web\ExplolerViaNetworkConsole\ExplolerViaNetworkConsole\obj\Debug\ExplolerViaNetworkConsole.csprojResolveAssemblyReference.cache
+D:\Sharing\github\gahara\course_web\ExplolerViaNetworkConsole\ExplolerViaNetworkConsole\bin\Debug\ExplolerViaNetworkConsole.exe
+D:\Sharing\github\gahara\course_web\ExplolerViaNetworkConsole\ExplolerViaNetworkConsole\bin\Debug\ExplolerViaNetworkConsole.pdb
