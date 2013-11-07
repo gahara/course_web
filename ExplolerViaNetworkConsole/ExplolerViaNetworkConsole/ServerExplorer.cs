@@ -38,52 +38,30 @@ namespace ExplolerViaNetworkConsole
             // todo: make const for max number in queue for connection
             ((Socket)socketList[0]).Listen(10);
 
+            Dictionary<Socket, AbsProtocolConnection> dictionary = new Dictionary<Socket,AbsProtocolConnection>();
+            //dictionary.Add((Socket)socketList[1], new UDPProtocolConnection((Socket)socketList[1]));
+
+            AbsProtocolConnection connection;
+
+
             while (true)
             {
                 readyList = (ArrayList)socketList.Clone();
                 //todo: make const for  1000 (timeout)
 
-                //rewrite accept part on commands too (maybe)
                 Socket.Select(readyList, null, null, 1000);
                 foreach (Socket s in readyList)
                 {
                     if (s == (Socket)socketList[0])
                     {
-                        Socket client = null;
-                        try
-                        {
-                            client = s.Accept();
-                            AuthorizeTask task = new AuthorizeTask(client, m_password);
-                            task.Run();
-                            if (task.isAuthorized)
-                            {
-                                //debug mode
-                                socketList.Add(client);
-                                Debug.WriteLine("Client accepted: " + ((IPEndPoint)client.RemoteEndPoint).Address.ToString());
-                            }
-                            else
-                                client.Close();
-                        }
-                        catch (Exception ex)
-                        {
-                            // here can be error
-                            // i dont really know, client.connected can be executed
-                            // before null cheking client 
-                            if (client != null && client.Connected)
-                                client.Close();
-                        }
-                    }
-                    else if (s == (Socket)socketList[1])
+                        Socket clientSocket = null;
+                        clientSocket = s.Accept();
+                        AbsProtocolConnection clientConnection = new TCPProtocolConnection(socketList, dictionary, clientSocket, m_password);
+                    } else
                     {
- 
-                    }
-                    else
-                    {
-                        //byte[] buf = new byte[m_commandBuf];
-                        //s.Receive(buf, m_commandBuf, SocketFlags.None);
-                        //string cmdstr = Encoding.Unicode.GetString(buf);
-                        //Command cmd = m_protocol.ParseCommand(cmdstr); 
-                        // here must be Thread(cmd.run, socket s);
+                        connection = dictionary[s];
+                        Command cmd = connection.Receive();
+                        connection.Send(cmd.Start());
                     }
                 }
             }

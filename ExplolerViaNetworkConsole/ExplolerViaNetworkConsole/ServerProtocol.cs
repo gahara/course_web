@@ -15,24 +15,14 @@ namespace ExplolerViaNetworkConsole
         /// this is the wrapper for some
         /// functions for parsing requests
         /// </summary>
-        /// todo: make absclass ProtocolModule and the inherit 2 realizations: server and client
+        /// todo: make absclass ProtocolModule and inherit 2 realizations: server and client
         public class ProtocolModule
         {
-            private static string m_serverAccept = "You_are_chosen_one";
-            private static string m_serverDecline = "Wrong_password";
-
-            public static string Authorize(ref bool _isSuccess, string _param, string _pass)
+            public static int msgMaxLenght = 500;
+            public static Command Authorize(ref bool _isSuccess, string _param, string _pass)
             {
-                if (_pass == _param)
-                {
-                    _isSuccess = true;
-                    return m_serverAccept;
-                }
-                else
-                {
-                    _isSuccess = false;
-                    return m_serverDecline;
-                }
+                _isSuccess = (_pass == _param) ? true : false;
+                return new AuthorizeCommand(_isSuccess);
             }
 
             public static string ExtractMsg(string _a)
@@ -49,11 +39,37 @@ namespace ExplolerViaNetworkConsole
                 return _a.Substring(startIndex, Convert.ToInt32(num));
             }
 
-            public static string WrapMsg(string _a)
+            public static string[] DevideMsg(string _a)
+            {
+                int len = msgMaxLenght;
+                int count = (_a.Count() + len - 1) / len;
+                string[] res = new string[count];
+                int startPos = 0;
+                
+                for (int i = 0; i < count - 1; i++)
+                {
+                    res[i] = _a.Substring(startPos, len);
+                    startPos += len;
+                }
+                len = _a.Count() - startPos + 1;
+                res[count - 1] = _a.Substring(startPos, len);
+                
+                return res;
+            }
+
+            public static string WrapMsg(string _a, int _numberInPackage, int _packagesNum)
             {
                 int num = _a.Count();
-                return (num.ToString() + " " + _a);
+                return (
+                    num.ToString() 
+                    + " " 
+                    + _numberInPackage.ToString() 
+                    + " " 
+                    + _packagesNum.ToString() 
+                    + " " 
+                    + _a);
             }
+
 
             public static Command ParseCommand(string _cmd)
             {
@@ -75,14 +91,18 @@ namespace ExplolerViaNetworkConsole
 
         /// <summary>
         /// commands class give us interface for
-        /// forming 
+        /// transforming real actions to answer string
         /// </summary>
         public abstract class Command
         {
-            // todo: make error class 
-            // maybe
             protected string m_parameter;
-            public abstract String[] Start();
+            public abstract String Start();
+        }
+
+        public class NullCommand : Command
+        {
+            public NullCommand() { }
+            public override string Start() {return "";}
         }
 
         public class CatCommand : Command
@@ -92,7 +112,7 @@ namespace ExplolerViaNetworkConsole
                 m_parameter = _param;
             }
 
-            public override string[] Start()
+            public override string Start()
             {
                 throw new NotImplementedException();
             }
@@ -155,7 +175,7 @@ namespace ExplolerViaNetworkConsole
                 m_parameter = _param;
             }
 
-            public override string[] Start()
+            public override string Start()
             {
                 List<FileObject> files = Ls(m_parameter);
                 string[] result = null;
@@ -168,15 +188,31 @@ namespace ExplolerViaNetworkConsole
                 {
 
                 }
-                return result;
+                return result[0];
             }
         }
 
         public class UnknownCommand : Command
         {
-            public override string[] Start()
+            public override string Start()
             {
-                return null;
+                return "";
+            }
+        }
+
+        public class AuthorizeCommand : Command
+        {
+            private static string m_serverAccept = "You_are_chosen_one";
+            private static string m_serverDecline = "Wrong_password";
+
+            private bool m_authorized;
+            public AuthorizeCommand(bool _authorized)
+            {
+                m_authorized = _authorized;
+            }
+            public override string Start()
+            {
+                return m_authorized ? AuthorizeCommand.m_serverAccept : AuthorizeCommand.m_serverDecline; 
             }
         }
 

@@ -1,102 +1,106 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ExplolerViaNetworkConsole
 {
     public partial class ServerExplorer
     {
-        /// <summary>
-        ///  tasks for handling client requests
-        ///  
-        /// </summary>
-        /// 
-
-        public abstract class Task
+        public abstract class AbsProtocolConnection
         {
-            protected const int m_acceptBuf = 36;
-            protected const int m_commandBuf = 540;
-            protected const int m_brdcstBuf = 36;
+            protected Socket m_connection;
 
-            protected Socket m_socket = null;
-            public abstract void Run();
+            public abstract Command Receive();
+            public abstract void Send(string msg);
         }
 
-        public class AuthorizeTask : Task
+        public class TCPProtocolConnection : AbsProtocolConnection
         {
-            /// <summary>
-            /// This is class for authorization of client 
-            ///     in Run section we receive some string from client 
-            ///     extract from this string password(in current 
-            ///     realization this string contains only pass)
-            ///     and compare with real pass and send "string result" 
-            ///     (this our decision about authorization)
-            ///     
-            ///     methods for extracting pass from str
-            ///     are contained in ProtocolModule 
-            /// </summary>
+            private static byte m_maxAttempts = 10;
 
+            private const int m_bufSz = 540;
+
+            private ArrayList m_sockets = null;
+            private Dictionary<Socket, AbsProtocolConnection> m_dictionary;
             private string m_password;
+            private bool m_isAuthorized;
+            private int m_authorizeAttempt;
+            private byte[] m_rcvBuf = new byte[m_bufSz];
 
-            private bool m_isAuthorized = false;
-
-            public bool isAuthorized { get { return m_isAuthorized; } }
-
-            public AuthorizeTask(Socket _s, string _pass)
+            public TCPProtocolConnection(ArrayList _sockets, Dictionary<Socket, AbsProtocolConnection> _dictionary,  Socket _connection, string _password)
             {
-                m_socket = _s;
-                m_password = _pass;
+                m_dictionary = _dictionary;
+                m_password = _password;
+                m_connection = _connection;
+                m_sockets = _sockets;
+                m_isAuthorized = false;
+                m_authorizeAttempt = 0;
             }
 
-            public override void Run()
+            private void Close()
             {
-                byte[] buf = new byte[m_acceptBuf];
+                if (m_connection.Connected) { m_connection.Close(); m_dictionary.Remove(m_connection); }
+                m_sockets.Remove(m_connection);
+            }
 
-                m_socket.Receive(buf, m_acceptBuf, SocketFlags.None);
-                string param = Encoding.Unicode.GetString(buf);
-                //debug mode:
-                Debug.WriteLine("~~~~~Run method param: " + param);
-                Debug.WriteLine("~~~~~Run method pass: " + m_password);
-                string result = ProtocolModule.Authorize(ref m_isAuthorized, param, m_password);
-                Debug.WriteLine("~~~~~Run method: asnwer " + result);
-                m_socket.Send(Encoding.Unicode.GetBytes(result));
+            public override Command Receive()
+            {
+                int count = m_connection.Receive(m_rcvBuf, m_bufSz, SocketFlags.None);
+                if (count == 0)
+                {
+                    Close();
+                    return ProtocolModule.
+                }
+                string msg = ProtocolModule.ExtractMsg(Encoding.Unicode.GetString(m_rcvBuf));
+                Command result = null;
+                
+                if (m_isAuthorized) { result = ProtocolModule.ParseCommand(msg); }
+                else
+                {
+                    m_authorizeAttempt++;
+                    result = ProtocolModule.Authorize(ref m_isAuthorized, msg, m_password);
+                    if (!m_isAuthorized && m_authorizeAttempt > 9) { this.Close(); }
+                }
+                return result;
+            }
+
+            public override void Send(string _msg)
+            {
+                //devide msg on packets
+                if (m_connection.Connected)
+                {
+                    string[] packages = ProtocolModule.DevideMsg(_msg);
+                    int count = packages.Count();
+                    for (int i = 0; i < count; i++)
+                        m_connection.Send(Encoding.Unicode.GetBytes(ProtocolModule.WrapMsg(packages[i], i, count))); 
+                }
             }
         }
 
-        public class BroadcastRequestTask : Task
+        public class UDPProtocolConnection : AbsProtocolConnection
         {
+            private const int m_brdcstBuf = 36;
 
-            public BroadcastRequestTask(Socket _rcvSocket)
+            public UDPProtocolConnection(Socket _connection)
             {
-                m_socket = _rcvSocket;
+                m_connection = _connection;
             }
 
-            public override void Run()
+            public override Command Receive()
             {
-                byte[] buf = new byte[m_brdcstBuf];
-                m_socket.Receive(buf, m_brdcstBuf, SocketFlags.None);
-                string rcvd = Encoding.Unicode.GetString(buf);
-                // todo: check ip from rcvd socket
-                // is there some nats or other devices which can change ip on the way
-                // form socket for sending
-                // for this: get ip and port
-                //
-                // must read whole book about networks >< fucking shit
-
+                throw new NotImplementedException();
             }
-        }
 
-        public class CommonTask : Task
-        {
-            public override void Run()
+            public override void Send(string _msg)
             {
                 throw new NotImplementedException();
             }
         }
-
     }
 }
