@@ -26,13 +26,17 @@ namespace NetworkConsole
             ClientTransferConnection ctc = new ClientTransferConnection();
             ctc.Connect("127.0.0.1", 24567);
             string ss = "";
-            for (int i = 0; i < 400; i++)
-                ss += "Fuuu1uuu1";
+            for (int i = 0; i < 10000; i++)
+                ss += "Fuuuuuu";
             ctc.Send(ss);
             string msg = "";
+            //Thread.Sleep(5000);
             if (ctc.Receive(ref msg))
             {
                 Console.WriteLine("client: " + msg);
+            }
+            else {
+                Console.WriteLine(" client: nothing");
             }
         }
     }
@@ -52,10 +56,15 @@ namespace NetworkConsole
             Socket s1 = s.Accept();
             ServerTransferConnection stc = new ServerTransferConnection(s1);
             string msg = "";
-            if (stc.Receive(ref msg)){
-                Console.WriteLine("Server: " +msg);
+            Thread.Sleep(2000);
+            if (stc.Receive(ref msg))
+            {
+                Console.WriteLine("Server: " + msg);
                 Console.WriteLine(msg.Count().ToString());
                 stc.Send("SHOPOLOLOLOLO");
+            }
+            else {
+                Console.WriteLine("Server: nothing");
             }
         }
     }
@@ -69,7 +78,7 @@ namespace NetworkConsole
             nclient c = new nclient();
             Thread t = new Thread(s.start);
             t.Start();
-            Thread.Sleep(1000);
+            //Thread.Sleep(1000);
             c.start();
             Console.ReadLine();
         }

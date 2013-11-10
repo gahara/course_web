@@ -4,3 +4,9 @@ D:\Sharing\github\my_rep\NetworkConsole\NetworkConsole\bin\Debug\NetworkConsole.
 D:\Sharing\github\my_rep\NetworkConsole\NetworkConsole\obj\Debug\NetworkConsole.csprojResolveAssemblyReference.cache
 D:\Sharing\github\my_rep\NetworkConsole\NetworkConsole\obj\Debug\NetworkConsole.exe
 D:\Sharing\github\my_rep\NetworkConsole\NetworkConsole\obj\Debug\NetworkConsole.pdb
+D:\Sharing\github\gahara\course_web\NetworkConsole\NetworkConsole\bin\Debug\NetworkConsole.exe.config
+D:\Sharing\github\gahara\course_web\NetworkConsole\NetworkConsole\obj\Debug\NetworkConsole.exe
+D:\Sharing\github\gahara\course_web\NetworkConsole\NetworkConsole\obj\Debug\NetworkConsole.pdb
+D:\Sharing\github\gahara\course_web\NetworkConsole\NetworkConsole\bin\Debug\NetworkConsole.exe
+D:\Sharing\github\gahara\course_web\NetworkConsole\NetworkConsole\bin\Debug\NetworkConsole.pdb
+D:\Sharing\github\gahara\course_web\NetworkConsole\NetworkConsole\obj\Debug\NetworkConsole.csprojResolveAssemblyReference.cache
