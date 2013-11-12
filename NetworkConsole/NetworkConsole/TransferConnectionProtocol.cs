@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -225,7 +226,107 @@ namespace NetworkConsole
             }
             return result;
         }
-
-
     }
+
+    public class ServerBroadcastProtocol
+    {
+        protected UdpClient m_connection;
+        public string m_type;
+        public byte[] m_info;
+
+        public ServerBroadcastProtocol(string _ipAddr, int _port)
+        {
+            m_connection = new UdpClient(_port);
+            m_info = Encoding.ASCII.GetBytes("server addr");
+            //m_info = Encoding.ASCII.GetBytes(_ipAddr);
+        }
+
+        private void Send(IPEndPoint _ep)
+        {
+            m_connection.Send(m_info, m_info.Length, _ep);
+        }
+
+
+        private void Receive(IAsyncResult _ar)
+        {
+            IPEndPoint ip = null;
+            byte[] buf = m_connection.EndReceive(_ar, ref ip);
+            int port = Convert.ToInt32(Encoding.ASCII.GetString(buf));
+            Debug.WriteLine("recvd:" + Encoding.ASCII.GetString(buf));
+            Debug.WriteLine("ip = " + ip.Address.ToString());
+
+            Send(new IPEndPoint(ip.Address, port));
+            this.Start();
+        }
+        
+        public void Start()
+        {
+            m_connection.BeginReceive(this.Receive, new object());
+        }
+    }
+
+    public class ClientBroadcastProtocol
+    {
+        public string m_type;
+
+        private Object m_syncvar = new Object(); 
+        private static HashSet<IPAddress> m_serverAddrs;
+
+        private UdpClient m_connection;
+        public byte[] m_info;
+        private int m_serverUDPPort;
+
+        public ClientBroadcastProtocol(int _port, int _serverPort)
+        {
+            m_serverUDPPort = _serverPort;
+            m_info = Encoding.ASCII.GetBytes(_port.ToString());
+            m_connection = new UdpClient(_port);
+            m_serverAddrs = new HashSet<IPAddress>();
+            Monitor.Enter(m_syncvar);
+            this.BeginReceive();
+        }
+
+        private void SendAddrInfo()
+        {
+            m_connection.Send(m_info, m_info.Length, new IPEndPoint(IPAddress.Broadcast, m_serverUDPPort));
+        }
+
+        public IPAddress[] Stop()
+        {
+            Monitor.Enter(m_syncvar);
+            Debug.WriteLine("Entered to stop client");
+            return m_serverAddrs.ToArray();
+        }
+
+        public void Start() 
+        {
+            Monitor.Exit(m_syncvar);
+            Debug.WriteLine("Entered to start client");
+            this.SendAddrInfo();
+        }
+
+        private void BeginReceive()
+        {
+            m_connection.BeginReceive(this.Receive, new object());
+        }
+
+        private void Receive(IAsyncResult _ar)
+        {
+            IPEndPoint ip = null;
+            byte[] buf = m_connection.EndReceive(_ar, ref ip);
+            string msg = Encoding.ASCII.GetString(buf);
+            Debug.WriteLine("recvd:" + Encoding.ASCII.GetString(buf));
+            if (Monitor.TryEnter(m_syncvar))
+            {
+                Debug.WriteLine("Entered to locked client receive block");
+                if (msg == "server addr")
+                    m_serverAddrs.Add(ip.Address);
+                Monitor.Exit(m_syncvar);
+            }
+            BeginReceive();
+        }
+    }
+
+
+
 }

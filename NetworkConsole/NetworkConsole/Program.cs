@@ -74,12 +74,33 @@ namespace NetworkConsole
 
         static void Main(string[] args)
         {
-            nserver s = new nserver();
+            /*nserver s = new nserver();
             nclient c = new nclient();
             Thread t = new Thread(s.start);
             t.Start();
             //Thread.Sleep(1000);
             c.start();
+            */
+            ServerBroadcastProtocol s = new ServerBroadcastProtocol("1234", 12346);
+            
+            ClientBroadcastProtocol c = new ClientBroadcastProtocol(12345, 12346);
+            //Thread t = new Thread(s.Start);
+            s.Start();
+            c.Start();
+            Thread.Sleep(1000);
+            IPAddress[] addr = c.Stop();
+            for (int i = 0; i < addr.Count(); i++)
+            {
+                Console.WriteLine(addr[i].ToString());
+            }
+            c.Start();
+            Thread.Sleep(1000);
+            addr = c.Stop();
+            for (int i = 0; i < addr.Count(); i++)
+            {
+                Console.WriteLine(addr[i].ToString());
+            }
+                //c.Receive();
             Console.ReadLine();
         }
     }
