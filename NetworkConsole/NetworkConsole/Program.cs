@@ -27,7 +27,7 @@ namespace NetworkConsole
             ctc.Connect("127.0.0.1", 24567);
             string ss = "";
             for (int i = 0; i < 10000; i++)
-                ss += "Fuuuuuu";
+                ss += "Fuuuk";
             ctc.Send(ss);
             string msg = "";
             //Thread.Sleep(5000);

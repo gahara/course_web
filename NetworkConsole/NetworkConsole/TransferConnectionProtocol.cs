@@ -29,14 +29,14 @@ namespace NetworkConsole
             bool result = true;
             try
             {
-                int count = TransferConnectionProtocol.CountPackages(_message);
-                for (int i = 0; i < count; i++)
+                string package = "";
+                while (TransferConnectionProtocol.GetNextPackage(ref package, ref _message))
                 {
-                    string package = TransferConnectionProtocol.GetNextPackage(ref _message, i + 1, count);
-                    Debug.WriteLine(m_type + ": " + " began send " + (i+1).ToString() + " package");
+                    Debug.WriteLine(m_type + ": " + " began send " + " package");
+
                     m_socket.Send(Encoding.Unicode.GetBytes(package));
-                    Thread.Sleep(300); ///WTF!!!!!!!!!!!!!!!!!!!!!! Ебаное говно
                 }
+                m_socket.Send(Encoding.Unicode.GetBytes(package));
             }
             catch (Exception ex)
             {
@@ -54,28 +54,26 @@ namespace NetworkConsole
             try
             {
                 bool isLastPackage = false;
-                bool isPenultimatePackage = false;
                 string rawData = "";
+                bool isError = false;
                 while (!isLastPackage)
                 {
                     Debug.WriteLine(m_type + ": " + "began receive");
                     int count = m_socket.Receive(m_buffer);
                     if (count == 0) throw new Exception("Connection closed");
                     rawData += Encoding.Unicode.GetString(m_buffer).Substring(0, count / 2); // 2 because UTF-16
-                    Debug.WriteLine("rcv: " + rawData);
                     string tmpMsg = "";
-                    if (TransferConnectionProtocol.ExtractMessage(
-                        ref rawData, ref tmpMsg, ref isPenultimatePackage, ref isLastPackage))
-                    {
+                    //Debug.WriteLine("raw data before extract: " + rawData);
+                    while (TransferConnectionProtocol.ExtractMessage(ref rawData, ref tmpMsg, ref isLastPackage, ref isError)) {
                         _message += tmpMsg;
-                        if (isPenultimatePackage)
-                            if (TransferConnectionProtocol.ExtractMessage(
-                                ref rawData, ref tmpMsg, ref isPenultimatePackage, ref isLastPackage)) { _message += tmpMsg; }
+                        if (isLastPackage) break;
+                        Debug.WriteLine(m_type + " receive :" + tmpMsg);
+                        Debug.WriteLine(m_type + " receive :lp " + isLastPackage.ToString());
+                        Debug.WriteLine(m_type + " receive :er " + isError.ToString());
+
+
                     }
-                    else
-                    {
-                        throw new Exception("Wrong package");
-                    }
+                    if (isError) throw new Exception("Wrong package");
                 }
             }
             catch (Exception ex)
@@ -141,27 +139,20 @@ namespace NetworkConsole
     {
         private TransferConnectionProtocol() { }
 
-        public static int bufferSize = 512;
+        public static int bufferSize = 1024;
         public static int receiveTimeout = 6000;
         private static int m_maxMsgLength = 200;
         public static int sendTimeout = 6000;
 
-        public static int CountPackages(string _message)
-        {
-            int len = m_maxMsgLength;
-            int count = (_message.Count() + len - 1) / len;
-            if (count == 0) // if msg is empty
-                count = 1;
-            return count;
-        }
-
-        public static string GetNextPackage(ref string _message, int _numberInPackage, int _packagesCount)
+        public static bool GetNextPackage(ref string _package, ref string _message)
         {
             int len = m_maxMsgLength;
             string rawPackage;
-            if (_message.Count() < len)
+            bool isLast = false;
+            if (_message.Count() <= len)
             {
                 rawPackage = _message;
+                isLast = true;
                 _message = "";
             }
             else
@@ -169,54 +160,70 @@ namespace NetworkConsole
                 rawPackage = _message.Substring(0, len);
                 _message = _message.Remove(0, len);
             }
-            return WrapPackage(rawPackage, _numberInPackage, _packagesCount);
+            _package = WrapPackage(rawPackage, isLast);
+            return !isLast;
         }
 
-        private static string WrapPackage(string _message, int _numberInPackage, int _packagesCount)
+        private static string WrapPackage(string _message, bool _isLastPackage)
         {
             /// SERVER MESSAGE STRUCT =  LENGTH_OF_CURRENT_MESSAGE + SPACE + 
             ///     CURRENT_NUMBER_OF_PACKAGE + SPACE + NUMBER_OF_PACKAGES + SPACE + MSG 
             ///
             /// IMPORTANT: PACKAGE CUR NUMBER START VALUE = 1
             int num = _message.Count();
+            char c = (_isLastPackage == true) ? '1' : '0';
             return (
                 num.ToString()
                 + " "
-                + _numberInPackage.ToString()
-                + " "
-                + _packagesCount.ToString()
+                + c
                 + " "
                 + _message);
         }
 
-        public static bool ExtractMessage(ref string _rawData, ref string _result, ref bool _isPenultimate, ref bool _isLastPackage)
+        public static bool ExtractMessage(ref string _rawData, ref string _result, ref bool _isLastPackage, ref bool _isError)
         {
-           
-            int packageCount = 0;
-            int packageNumber = 0;
+            char serviceInfo = '0';
             int msgLength = 0;
-            string message = "";
 
-            Regex regex = new Regex(@"^(\d+) (\d+) (\d+) (.*)", RegexOptions.Singleline);
-            Match match = regex.Match(_rawData);
+            string message = "";
             bool success;
+            Regex regex = new Regex(@"^(\d+) (\d) (.*)", RegexOptions.Singleline);
+            Match match = regex.Match(_rawData);
+            bool result = true;
             if (success = match.Success)
             {
                 msgLength = Convert.ToInt32(match.Groups[1].Value);
-                packageNumber = Convert.ToInt32(match.Groups[2].Value);
-                packageCount = Convert.ToInt32(match.Groups[3].Value);
-                message = match.Groups[4].Value;
-                Debug.WriteLine("msg length  = " + msgLength.ToString());
-                Debug.WriteLine("pack number = " + packageNumber.ToString());
-                Debug.WriteLine("packCount = " + packageCount.ToString());
+                serviceInfo = Convert.ToChar(match.Groups[2].Value);
+                message = match.Groups[3].Value;
+                //Debug.WriteLine("msg length  = " + msgLength.ToString());
+                //Debug.WriteLine("message info = " + serviceInfo + "  " + (serviceInfo == '0' ? "common" : "last"));
             }
 
-            if (message.Count() < msgLength) { return false; }
-            if (packageNumber == packageCount) { _isLastPackage = true; } else { _isLastPackage = false; }
-            if (packageCount - packageNumber == 1) { _isPenultimate = true; } else { _isPenultimate = false; }
-            _rawData = message.Substring(Convert.ToInt32(msgLength));
-            _result = message.Substring(0, Convert.ToInt32(msgLength));
-            return success;
+            // if msg must be parsed and its cannot be
+            // then message wrong
+            if (_rawData.Count() > (m_maxMsgLength + 20) && !success) ///+20 - this is very bad
+            {
+                _isError = true;
+            } else 
+                _isError = false;
+
+            // if data is not full
+            if (message.Count() < msgLength || !success) { result =  false;}
+            else
+                if (serviceInfo == '1') { _isLastPackage = true; } else { _isLastPackage = false; }
+
+            
+            //if last packag
+            ///Debug.WriteLine("Extract: msg data: " + message);
+            //Debug.WriteLine("Extract: msg data count = " + message.Count().ToString());
+            //Debug.WriteLine("Extract:length: " + msgLength.ToString());
+            //Debug.WriteLine("");
+            if (result)
+            {
+                _rawData = message.Substring(msgLength);
+                _result = message.Substring(0, msgLength);
+            }
+            return result;
         }
 
 
