@@ -60,6 +60,7 @@ namespace NetworkConsole
                 while (!isLastPackage)
                 {
                     Debug.WriteLine(m_type + ": " + "began receive");
+                    //todo: check if we have odd count of bytes
                     int count = m_socket.Receive(m_buffer);
                     if (count == 0) throw new Exception("Connection closed");
                     rawData += Encoding.Unicode.GetString(m_buffer).Substring(0, count / 2); // 2 because UTF-16

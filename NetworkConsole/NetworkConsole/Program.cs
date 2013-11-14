@@ -18,8 +18,6 @@ namespace NetworkConsole
     /// </summary>
     public class nclient
     {
-        public nclient()
-        { }
 
         public void start()
         {
