@@ -20,7 +20,7 @@ namespace NetworkConsole
                 }
                 else if (_cmd.Substring(0, Constants.cmdCat.Length) == Constants.cmdCat)
                 {
-                    cmd = new CatCommand(ref _memory, _cmd.Substring(Constants.cmdCat.Length));
+                    //cmd = new CatCommand(ref _memory, _cmd.Substring(Constants.cmdCat.Length));
                 }
                 else
                 {
@@ -66,18 +66,31 @@ namespace NetworkConsole
             public override string Run()
             {
                 bool isGood = true;
+                string header;
+                string package = "";
                 List<FileObject> files = null;
  	            try
                 {
                     files = Ls(m_parameter);
                 } catch (Exception ex) { isGood = false; }
-                return "";
+                if (files != null)
+                {
+                    header = Constants.ansLsRight;
+                    foreach (FileObject f in files)
+                        package += f.Convert() + '\n';
+                } else
+                {
+                    header = Constants.ansLsError;
+                    if (isGood) { header += Constants.errLsNoPath;}
+                    else {header += Constants.errLsUnknown;}
+                }
+
+                return header + package;
             }
         }
 
         public class LsCommand : AbsLsCommand
         {
-
             private List<FileObject> ParseObjects(FileInfo[] _files)
             {
                 List<FileObject> result = new List<FileObject>();
@@ -110,7 +123,9 @@ namespace NetworkConsole
 
             protected override List<FileObject> Ls(string _fullpath)
             {
+                //todo: implement root search
                 DirectoryInfo dirInfo = new DirectoryInfo(_fullpath);
+                
                 if (!dirInfo.Exists)
                 {
                     return null;
@@ -130,7 +145,7 @@ namespace NetworkConsole
             }
         }
 
-        public class AbsCatCommand : AbsCommand
+        /*public class AbsCatCommand : AbsCommand
         {
    
         }
@@ -141,9 +156,10 @@ namespace NetworkConsole
             {
 
             }
+
             private MemoryModule m_memory;
-            public CatCommand(ref Object _memory, string _param)
-        }
+            public CatCommand(ref Object _memory, string _param);
+        }*/
     }
 
 }

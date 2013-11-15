@@ -18,6 +18,11 @@ namespace NetworkConsole
         protected string m_type = "";
         protected byte[] m_buffer = new byte[TransferConnectionProtocol.bufferSize];
 
+        public Socket GetSocket()
+        {
+            return m_socket;
+        }
+
         public void Close()
         {
             //todo: check autoclosing
@@ -234,10 +239,10 @@ namespace NetworkConsole
         protected UdpClient m_connection;
         public string m_type;
         public byte[] m_info;
-
+        static int count = 0;
         public ServerBroadcastProtocol(string _ipAddr, int _port)
         {
-            m_connection = new UdpClient(_port);
+            m_connection = new UdpClient(Constants.serverUDPPort);
             m_info = Encoding.ASCII.GetBytes("server addr");
             //m_info = Encoding.ASCII.GetBytes(_ipAddr);
         }
@@ -327,7 +332,4 @@ namespace NetworkConsole
             BeginReceive();
         }
     }
-
-
-
 }

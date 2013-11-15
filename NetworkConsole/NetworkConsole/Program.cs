@@ -21,49 +21,41 @@ namespace NetworkConsole
 
         public void start()
         {
-            ClientTransferConnection ctc = new ClientTransferConnection();
-            ctc.Connect("127.0.0.1", 24567);
-            string ss = "";
-            for (int i = 0; i < 10000; i++)
-                ss += "Fuuuk";
-            ctc.Send(ss);
-            string msg = "";
-            //Thread.Sleep(5000);
-            if (ctc.Receive(ref msg))
+            ClientNetworkExplorer cl = new ClientNetworkExplorer();
+            if (cl.Connect("127.0.0.1"))
             {
-                Console.WriteLine("client: " + msg);
+                Console.WriteLine("Connected");
+                //string addr = cl.BroadcastSearch()[0];
+                int err = 0;
+                if (!cl.Authorize("12345678", ref err))
+                {
+                    Console.WriteLine(err.ToString());
+                }
+                else
+                {
+                    Console.WriteLine("authorized");
+                }
             }
-            else {
-                Console.WriteLine(" client: nothing");
+            else
+            {
+                Console.WriteLine("Not Connected");
             }
+
+
         }
     }
 
     public class nserver
     {
+        private ExplorerServer ex;
         public nserver()
         {
-            
+            ex = new ExplorerServer();
         }
 
         public void start()
         {
-            Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            s.Bind(new IPEndPoint(IPAddress.Any, 24567));
-            s.Listen(10);
-            Socket s1 = s.Accept();
-            ServerTransferConnection stc = new ServerTransferConnection(s1);
-            string msg = "";
-            Thread.Sleep(2000);
-            if (stc.Receive(ref msg))
-            {
-                Console.WriteLine("Server: " + msg);
-                Console.WriteLine(msg.Count().ToString());
-                stc.Send("SHOPOLOLOLOLO");
-            }
-            else {
-                Console.WriteLine("Server: nothing");
-            }
+           ex.Start();
         }
     }
 
@@ -79,7 +71,7 @@ namespace NetworkConsole
             //Thread.Sleep(1000);
             c.start();
             */
-            ServerBroadcastProtocol s = new ServerBroadcastProtocol("1234", 12346);
+           /* ServerBroadcastProtocol s = new ServerBroadcastProtocol("1234", 12346);
             
             ClientBroadcastProtocol c = new ClientBroadcastProtocol(12345, 12346);
             //Thread t = new Thread(s.Start);
@@ -99,6 +91,13 @@ namespace NetworkConsole
                 Console.WriteLine(addr[i].ToString());
             }
                 //c.Receive();
+            Console.ReadLine();*/
+            nserver s = new nserver();
+            nclient c = new nclient();
+            Thread t = new Thread(s.start);
+            t.Start();
+            c.start();
+            
             Console.ReadLine();
         }
     }
