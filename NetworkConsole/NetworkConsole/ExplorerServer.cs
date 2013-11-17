@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -83,7 +84,7 @@ namespace NetworkConsole
                 this.CloseConnection();
                 return;
             }
-
+            Debug.WriteLine("server got: " + msg);
             bool isDelete = false;
             if (m_auth.isAuthorized)
             {
@@ -158,13 +159,15 @@ namespace NetworkConsole
                 Socket.Select(readyList, null, null, 1000);
                 foreach (Socket s in readyList)
                 {
-                    if (s == (Socket)readyList[0])
+                    if (s == (Socket)socketList[0])
                     {
                         Socket cl_sock = s.Accept();
                         client = new ClientConnection(cl_sock, delCandidates, m_password);
                         m_clients.Add(cl_sock, client);
+                        socketList.Add(cl_sock);
                     }
                     else {
+                        Debug.WriteLine("Server in dictionary");
                         client = m_clients[s];
                         client.Start();
                     }
@@ -174,7 +177,9 @@ namespace NetworkConsole
                         {
                             m_clients.Remove(delS);
                             socketList.Remove(delS);
+                            
                         }
+                        delCandidates.Clear();
                     }
                 }
             }

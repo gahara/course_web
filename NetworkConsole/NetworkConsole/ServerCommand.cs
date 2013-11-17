@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -20,7 +21,16 @@ namespace NetworkConsole
                 }
                 else if (_cmd.Substring(0, Constants.cmdCat.Length) == Constants.cmdCat)
                 {
-                    //cmd = new CatCommand(ref _memory, _cmd.Substring(Constants.cmdCat.Length));
+                    int len = Constants.cmdCat.Length;
+                    bool isFirst = true;
+                    if (_cmd[len] == Constants.optCatFirst[0])
+                        len += Constants.optCatFirst.Length;
+                    else
+                    {
+                        len += Constants.optCatNext.Length;
+                        isFirst = false;
+                    }
+                    cmd = new CatCommand(ref _memory, _cmd.Substring(len), isFirst);
                 }
                 else
                 {
@@ -38,9 +48,9 @@ namespace NetworkConsole
             private string m_result;
             public AuthCommand(bool _isAuthorized, bool _isCloseConnection)
             {
-                if (_isCloseConnection) { m_parameter = Constants.authWrongPasswordCloseConnection; }
-                else if (_isAuthorized) { m_parameter = Constants.authRightPassword; }
-                else { m_parameter = Constants.authWrongPassword; }
+                if (_isCloseConnection) { m_result = Constants.authWrongPasswordCloseConnection; }
+                else if (_isAuthorized) { m_result = Constants.authRightPassword; }
+                else { m_result = Constants.authWrongPassword; }
             }
 
             public override string Run()
@@ -75,14 +85,14 @@ namespace NetworkConsole
                 } catch (Exception ex) { isGood = false; }
                 if (files != null)
                 {
-                    header = Constants.ansLsRight;
+                    header = Constants.ansLs;
                     foreach (FileObject f in files)
-                        package += f.Convert() + '\n';
+                        package += f.ToString() + '\n';
                 } else
                 {
                     header = Constants.ansLsError;
-                    if (isGood) { header += Constants.errLsNoPath;}
-                    else {header += Constants.errLsUnknown;}
+                    if (isGood) { header += Constants.errNoPath;}
+                    else {header += Constants.errUnknown;}
                 }
 
                 return header + package;
@@ -145,21 +155,91 @@ namespace NetworkConsole
             }
         }
 
-        /*public class AbsCatCommand : AbsCommand
-        {
-   
-        }
 
-        public class CatCommand : AbsCatCommand
+        public class CatCommand : AbsCommand
         {
-            class MemoryModule
+
+            public class MemoryModule {
+                
+                private long m_fileLength;
+                private long m_bytesRead;
+                private string filename;
+                private FileStream m_fs;
+                public byte[] m_buf;
+
+                public bool isEnd { get { return (m_bytesRead == m_fileLength && m_fileLength != 0); } } 
+
+                public MemoryModule(int _bufSize)
+                {
+                    m_buf = new byte[_bufSize];
+                    m_fileLength = 0;
+                    m_bytesRead = 0;
+                }
+
+                public bool OpenFile(string _filename)
+                {
+                    bool result = false;
+                    try
+                    {
+                        if (File.Exists(_filename))
+                        {
+                            m_fileLength = (new FileInfo(_filename)).Length;
+                            m_fs = File.Open(_filename, FileMode.Open);
+                            m_bytesRead = 0;
+                            result = true;
+                        }
+                    }
+                    catch (Exception ex) { Debug.WriteLine(ex.Message); }
+                    return result;
+                }
+
+                public bool ReadPortion(ref int _count, int _maxSize) // buf must be
+                {
+                    //only even _maxSize, because after we shall convert to utf8 string
+                    bool result = false;
+                    try
+                    {
+                        _count = m_fs.Read(m_buf, 0, _maxSize);
+                        m_bytesRead += _count;
+                        result = true;
+                        if (this.isEnd) { m_fs.Close(); }
+                    }
+                    catch (Exception ex) { Debug.WriteLine(ex.Message); }
+                    return result;
+                }
+           }
+
+            private bool m_isPathExists;
+            private MemoryModule m_memory;
+            public CatCommand(ref Object _memory, string _param, bool _isFirst)
             {
-
+                if (_isFirst)
+                {
+                    if (_memory == null) {_memory = new MemoryModule(Constants.filePackageSize);}
+                    m_memory = (MemoryModule)_memory;
+                    m_isPathExists = m_memory.OpenFile(_param);
+                }
             }
 
-            private MemoryModule m_memory;
-            public CatCommand(ref Object _memory, string _param);
-        }*/
+            public override string Run()
+            {
+                string msg = "";
+                if (m_isPathExists)
+                {
+                    int count = 0;
+                    if (m_memory.ReadPortion(ref count, Constants.filePackageSize))
+                    {
+                        msg = Constants.ansCat;
+                        if (m_memory.isEnd)
+                            if (count % 2 == 1) { msg += Constants.ansCatLastUneven; }
+                            else { msg += Constants.ansCatLastEven; }
+                        else { msg += Constants.ansCatNotLast; }
+                        msg += Encoding.Unicode.GetString(m_memory.m_buf, 0, count);
+                    } else { msg = Constants.ansCatError + Constants.errUnknown; }
+                }
+                else { msg = Constants.ansCatError + Constants.errNoPath; }
+                return msg;
+            }
+        }
     }
-
 }

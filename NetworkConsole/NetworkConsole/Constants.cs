@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace NetworkConsole
@@ -22,19 +23,34 @@ namespace NetworkConsole
         public static string cmdLs = "ls ";
         public static string cmdCat = "cat ";
 
-        public static string ansLsRight = "ans ls ";
+        public static string optCatFirst = "f ";
+        public static string optCatNext = "n";
+
+        public static string ansLs = "ans ls ";
         public static string ansLsError = "ans err ls ";
 
-        public static string errLsNoPath = "path";
-        public static string errLsUnknown = "unknown";
+        public static string ansCat = "ans cat ";
+        public static string ansCatError = "ans err cat ";
+        public static string ansCatNotLast = "0 ";
+        public static string ansCatLastEven = "1 ";
+        public static string ansCatLastUneven = "2 ";
+
+
+        public static string errNoPath = "path";
+        public static string errUnknown = "unknown";
 
         public static int codeErrBadConnection = 100;
         public static int codeErrBadAuthorization = 101;
         public static int codeErrVeryBadAuthorization = 102;
 
+        public static int codeErrUnknown = 13;
 
         public static int codeErrLsBadPath = 200;
-        public static int codeErrLsAnother = 201;
+
+        public static int codeErrCatBadPath = 300;
+
+        public static int filePackageSize = 800; //only even
+        
         //public static int codeErrLsWrongObjects = 202;
 
 
@@ -45,31 +61,53 @@ namespace NetworkConsole
     {
         public FileObject(bool _isFile, string _name, long _size, DateTime _date)
         {
-            isFile = _isFile;
-            name = _name;
-            size = _size;
-            date = _date;
+            m_isFile = _isFile;
+            m_name = _name;
+            m_size = _size;
+            m_date = _date;
         }
-        public readonly bool isFile;
-        public readonly string name;
-        public readonly long size;
-        public readonly DateTime date;
+        public readonly bool m_isFile;
+        public readonly string m_name;
+        public readonly long m_size;
+        public readonly DateTime m_date;
 
-        public string Convert()
+        public override string ToString()
         {
-            return "";
+            string result = "";
+            if (m_isFile) { result += 'f'; }
+            else { result += 'd'; }
+            result += '\t';
+            result += m_name + '\t';
+            result += m_size.ToString() + '\t';
+            result += m_date.Ticks.ToString();
+
+            return result;
         }
 
-        public static void Unconvert(string _rawData)
+        public static List<FileObject> Parse(string _msg)
         {
-            
+            List<FileObject> files = new List<FileObject>();
+            string pattern = @"([fd]{1})\t(.+?)\t(\d+)\t(\d+)\n";
+            foreach (Match m in Regex.Matches(_msg, pattern, RegexOptions.Singleline))
+            {
+                bool isFile = (m.Groups[1].Value == "f");
+                string filename = m.Groups[2].Value;
+                long filesize = Convert.ToInt64(m.Groups[3].Value);
+                long ticks = Convert.ToInt64(m.Groups[4].Value);
+                files.Add(new FileObject(
+                        isFile,
+                        filename,
+                        filesize,
+                        new DateTime(ticks)));
+            }
+            return files;
         }
 
         // debug info
         public string GetString()
         {
             string res;
-            if (!isFile)
+            if (!m_isFile)
             {
                 res = "dir  ";
             }
@@ -78,14 +116,14 @@ namespace NetworkConsole
                 res = "file ";
             }
             int len = 15;
-            if (name.Length >= len)
-                res += name.Substring(0, len);
+            if (m_name.Length >= len)
+                res += m_name.Substring(0, len);
             else
-                res += name.PadRight(len);
+                res += m_name.PadRight(len);
             res += " ";
-            res += ((size / 1024).ToString() + "KB").PadRight(10);
+            res += ((m_size / 1024).ToString() + "KB").PadRight(10);
             res += " ";
-            res += date.ToString();
+            res += m_date.ToString();
             return res;
         }
 

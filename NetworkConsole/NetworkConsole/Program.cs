@@ -34,6 +34,23 @@ namespace NetworkConsole
                 else
                 {
                     Console.WriteLine("authorized");
+                    string req = "";
+                    while (req != "exit")
+                    {
+                        List<FileObject> files = null;
+                        Console.Write("Directory to browse: ");
+                        req = Console.ReadLine();
+                        if (cl.Ls(req, ref files, ref err))
+                        {
+                            foreach (FileObject f in files)
+                            {
+                                Console.WriteLine(f.GetString());
+                            }
+                        }
+                        else {
+                            Console.WriteLine("Error " + err.ToString());
+                        }
+                    }
                 }
             }
             else
@@ -71,7 +88,7 @@ namespace NetworkConsole
             //Thread.Sleep(1000);
             c.start();
             */
-           /* ServerBroadcastProtocol s = new ServerBroadcastProtocol("1234", 12346);
+            /*ServerBroadcastProtocol s = new ServerBroadcastProtocol("1234", 12346);
             
             ClientBroadcastProtocol c = new ClientBroadcastProtocol(12345, 12346);
             //Thread t = new Thread(s.Start);
