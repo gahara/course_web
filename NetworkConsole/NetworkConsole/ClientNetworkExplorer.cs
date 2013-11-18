@@ -69,21 +69,20 @@ namespace NetworkConsole
         public bool Cat(string _filepath, ref String _file, ref int _err)
         {
             _file = new String("".ToCharArray());
-            bool isEnd = false;
+            bool isNotEnd = true;
             bool isFirst = true;
             _err = 0;
-            while (!isEnd)
+            while (isNotEnd)
             {
                 string msg = this.GetCatHeader(isFirst);
-                if (isFirst) {msg += _filepath;}
+                if (isFirst) { msg += _filepath; isFirst = false; }
                 string ans = "";
                 if (!this.SendAndRecv(msg, ref ans))
                 {
                     _err = Constants.codeErrBadConnection;
                     break;
                 }
-                isEnd = ParseCatMessage(ref ans, ref _err);
-                if (_err == 0) { _file += ans; }
+                isNotEnd = ParseCatMessage(ans,ref  _file, ref _err);
             }
             if (_err != 0) { return false; }
             else { return true; }
@@ -102,7 +101,7 @@ namespace NetworkConsole
                 _files = FileObject.Parse(_msg);
                 result = true;
             }
-            else if (Regex.Match(_msg, "^" + Constants.ansLsError + Constants.errLsNoPath, RegexOptions.Singleline).Success)
+            else if (Regex.Match(_msg, "^" + Constants.ansLsError + Constants.errNoPath, RegexOptions.Singleline).Success)
                 _err = Constants.codeErrLsBadPath;
             else
                 _err = Constants.codeErrUnknown;
@@ -128,16 +127,26 @@ namespace NetworkConsole
                 return Constants.cmdCat + Constants.optCatNext;
         }
 
-        private bool ParseCatMessage(string _msg, ref byte[] _file, ref int _err)
+        private bool ParseCatMessage(string _msg, ref String _file, ref int _err)
         {
             bool result = false;
             if (Regex.Match(_msg, @"^" + Constants.ansCat, RegexOptions.Singleline).Success)
             {
                 _err = 0;
                 int len = Constants.ansCat.Length;
-                if (_msg[len] == Constants.ansCatNotLast[0]) { result = true; }
+                int isUneven = 0;
+                if (_msg[len] == Constants.ansCatNotLast[0]) { result = true; len += Constants.ansCatNotLast.Length;}
                 else if (_msg[len] == Constants.ansCatLastUneven[0])
                 {
+                    len += Constants.ansCatLastUneven.Length;
+                    isUneven = 1;
+                }
+                else { len += Constants.ansCatLastEven.Length; }
+                if (isUneven == 0) {
+                    _file += _msg.Substring(len); 
+                } else {
+                    byte[] bytes = Encoding.Default.GetBytes(_msg.Substring(len));
+                    _file += Encoding.Default.GetString(bytes, 0, bytes.Length - isUneven);
                 }
             }
             else if (Regex.Match(_msg, @"^" + Constants.ansCatError + Constants.errNoPath, RegexOptions.Singleline).Success)

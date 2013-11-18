@@ -15,6 +15,7 @@ namespace NetworkConsole
             public static AbsCommand ParseCommand(string _cmd, ref Object _memory)
             {
                 AbsCommand cmd = null;
+                Debug.WriteLine("command received: " + _cmd);
                 if (_cmd.Substring(0, Constants.cmdLs.Length) == Constants.cmdLs)
                 {
                     cmd = new LsCommand(_cmd.Substring(Constants.cmdLs.Length));
@@ -73,6 +74,8 @@ namespace NetworkConsole
         {
             protected abstract List<FileObject> Ls(string _fullpath);
 
+            protected abstract List<FileObject> GetDrives();
+
             public override string Run()
             {
                 bool isGood = true;
@@ -81,7 +84,10 @@ namespace NetworkConsole
                 List<FileObject> files = null;
  	            try
                 {
-                    files = Ls(m_parameter);
+                    if (m_parameter == @"\")
+                        files = GetDrives();
+                    else
+                        files = Ls(m_parameter);
                 } catch (Exception ex) { isGood = false; }
                 if (files != null)
                 {
@@ -131,6 +137,17 @@ namespace NetworkConsole
                 return result;
             }
 
+            protected override List<FileObject> GetDrives()
+            {
+                List<FileObject> result = new List<FileObject>();
+                DriveInfo[] allDrives = DriveInfo.GetDrives();
+                foreach (DriveInfo d in allDrives)
+                {
+                    result.Add(new FileObject(false, d.Name, 0, new DateTime(0)));
+                }
+                return result;
+            }
+
             protected override List<FileObject> Ls(string _fullpath)
             {
                 //todo: implement root search
@@ -160,12 +177,15 @@ namespace NetworkConsole
         {
 
             public class MemoryModule {
-                
+
+                private bool m_isPathExists;
                 private long m_fileLength;
                 private long m_bytesRead;
-                private string filename;
+                public string filename;
                 private FileStream m_fs;
                 public byte[] m_buf;
+
+                public bool isPathExists { get { return m_isPathExists; } }
 
                 public bool isEnd { get { return (m_bytesRead == m_fileLength && m_fileLength != 0); } } 
 
@@ -184,12 +204,13 @@ namespace NetworkConsole
                         if (File.Exists(_filename))
                         {
                             m_fileLength = (new FileInfo(_filename)).Length;
-                            m_fs = File.Open(_filename, FileMode.Open);
+                            m_fs = File.OpenRead(_filename);
                             m_bytesRead = 0;
                             result = true;
                         }
                     }
                     catch (Exception ex) { Debug.WriteLine(ex.Message); }
+                    m_isPathExists = result;
                     return result;
                 }
 
@@ -209,32 +230,41 @@ namespace NetworkConsole
                 }
            }
 
-            private bool m_isPathExists;
             private MemoryModule m_memory;
             public CatCommand(ref Object _memory, string _param, bool _isFirst)
             {
+                Debug.WriteLine("is first: " + _isFirst.ToString());
+
                 if (_isFirst)
                 {
-                    if (_memory == null) {_memory = new MemoryModule(Constants.filePackageSize);}
+                    if (_memory == null) { _memory = new MemoryModule(Constants.filePackageSize); }
                     m_memory = (MemoryModule)_memory;
-                    m_isPathExists = m_memory.OpenFile(_param);
+                    m_memory.OpenFile(_param);
                 }
+                else
+                {
+                    m_memory = (MemoryModule)_memory;
+                }
+
             }
 
             public override string Run()
             {
                 string msg = "";
-                if (m_isPathExists)
+                if (m_memory.isPathExists)
                 {
                     int count = 0;
                     if (m_memory.ReadPortion(ref count, Constants.filePackageSize))
                     {
                         msg = Constants.ansCat;
+                        Debug.WriteLine("cat read :" + count.ToString() + " bytes");
                         if (m_memory.isEnd)
-                            if (count % 2 == 1) { msg += Constants.ansCatLastUneven; }
+                            if (count % 2 == 1) { msg += Constants.ansCatLastUneven; count++; }
                             else { msg += Constants.ansCatLastEven; }
                         else { msg += Constants.ansCatNotLast; }
-                        msg += Encoding.Unicode.GetString(m_memory.m_buf, 0, count);
+                        //string tmpmsg = Encoding.BigEndianUnicode.GetString(m_memory.m_buf, 0, count);
+                        //byte[] tmpbuf = Encoding.BigEndianUnicode.GetBytes(tmpmsg);
+                        msg += Encoding.Default.GetString(m_memory.m_buf, 0, count);
                     } else { msg = Constants.ansCatError + Constants.errUnknown; }
                 }
                 else { msg = Constants.ansCatError + Constants.errNoPath; }

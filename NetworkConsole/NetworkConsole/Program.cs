@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -38,17 +40,38 @@ namespace NetworkConsole
                     while (req != "exit")
                     {
                         List<FileObject> files = null;
-                        Console.Write("Directory to browse: ");
                         req = Console.ReadLine();
-                        if (cl.Ls(req, ref files, ref err))
+                        Match m = Regex.Match(req, @"^ls (.*)");
+                        if (m.Success)
                         {
-                            foreach (FileObject f in files)
+                            if (cl.Ls(m.Groups[1].Value, ref files, ref err))
                             {
-                                Console.WriteLine(f.GetString());
+                                foreach (FileObject f in files)
+                                {
+                                    Console.WriteLine(f.GetString());
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("Error " + err.ToString());
                             }
                         }
-                        else {
-                            Console.WriteLine("Error " + err.ToString());
+                        m = Regex.Match(req, "^cat (.*)");
+                        if (m.Success)
+                        {
+                            String f =null;
+                            if (cl.Cat(m.Groups[1].Value, ref f, ref err))
+                            {
+                                FileStream fs = File.OpenWrite("__tmp.txt");
+                                fs.Write(Encoding.Default.GetBytes(f),0,f.Length);
+                                fs.Close();
+                                Process.Start("notepad.exe", "__tmp.txt");
+
+                            }
+                            else
+                            {
+                                Console.WriteLine("Error " + err.ToString());
+                            }
                         }
                     }
                 }
@@ -81,40 +104,13 @@ namespace NetworkConsole
 
         static void Main(string[] args)
         {
-            /*nserver s = new nserver();
-            nclient c = new nclient();
-            Thread t = new Thread(s.start);
-            t.Start();
-            //Thread.Sleep(1000);
-            c.start();
-            */
-            /*ServerBroadcastProtocol s = new ServerBroadcastProtocol("1234", 12346);
-            
-            ClientBroadcastProtocol c = new ClientBroadcastProtocol(12345, 12346);
-            //Thread t = new Thread(s.Start);
-            s.Start();
-            c.Start();
-            Thread.Sleep(1000);
-            IPAddress[] addr = c.Stop();
-            for (int i = 0; i < addr.Count(); i++)
-            {
-                Console.WriteLine(addr[i].ToString());
-            }
-            c.Start();
-            Thread.Sleep(1000);
-            addr = c.Stop();
-            for (int i = 0; i < addr.Count(); i++)
-            {
-                Console.WriteLine(addr[i].ToString());
-            }
-                //c.Receive();
-            Console.ReadLine();*/
             nserver s = new nserver();
             nclient c = new nclient();
             Thread t = new Thread(s.start);
             t.Start();
             c.start();
-            
+
+
             Console.ReadLine();
         }
     }
