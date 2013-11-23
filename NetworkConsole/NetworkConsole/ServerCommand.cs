@@ -259,11 +259,8 @@ namespace NetworkConsole
                         msg = Constants.ansCat;
                         Debug.WriteLine("cat read :" + count.ToString() + " bytes");
                         if (m_memory.isEnd)
-                            if (count % 2 == 1) { msg += Constants.ansCatLastUneven; count++; }
-                            else { msg += Constants.ansCatLastEven; }
+                            { msg += Constants.ansCatLastEven; }
                         else { msg += Constants.ansCatNotLast; }
-                        //string tmpmsg = Encoding.BigEndianUnicode.GetString(m_memory.m_buf, 0, count);
-                        //byte[] tmpbuf = Encoding.BigEndianUnicode.GetBytes(tmpmsg);
                         msg += Encoding.Default.GetString(m_memory.m_buf, 0, count);
                     } else { msg = Constants.ansCatError + Constants.errUnknown; }
                 }

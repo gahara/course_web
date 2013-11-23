@@ -1,0 +1,9 @@
+D:\Sharing\github\gahara\course_web\ServerExplorer\ServerExplorer\bin\Debug\ServerExplorer.exe.config
+D:\Sharing\github\gahara\course_web\ServerExplorer\ServerExplorer\bin\Debug\ServerExplorer.exe
+D:\Sharing\github\gahara\course_web\ServerExplorer\ServerExplorer\bin\Debug\ServerExplorer.pdb
+D:\Sharing\github\gahara\course_web\ServerExplorer\ServerExplorer\obj\Debug\ServerExplorer.csprojResolveAssemblyReference.cache
+D:\Sharing\github\gahara\course_web\ServerExplorer\ServerExplorer\obj\Debug\ServerExplorer.LogBox.resources
+D:\Sharing\github\gahara\course_web\ServerExplorer\ServerExplorer\obj\Debug\ServerExplorer.Properties.Resources.resources
+D:\Sharing\github\gahara\course_web\ServerExplorer\ServerExplorer\obj\Debug\ServerExplorer.csproj.GenerateResource.Cache
+D:\Sharing\github\gahara\course_web\ServerExplorer\ServerExplorer\obj\Debug\ServerExplorer.exe
+D:\Sharing\github\gahara\course_web\ServerExplorer\ServerExplorer\obj\Debug\ServerExplorer.pdb

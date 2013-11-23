@@ -147,7 +147,7 @@ namespace NetworkConsole
         private TransferConnectionProtocol() { }
 
         public static int bufferSize = 1024;
-        public static int receiveTimeout = 6000;
+        public static int receiveTimeout = 120000;
         private static int m_maxMsgLength = 200;
         public static int sendTimeout = 6000;
 

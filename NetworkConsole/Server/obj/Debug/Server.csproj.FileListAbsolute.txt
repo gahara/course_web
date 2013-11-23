@@ -1,0 +1,15 @@
+D:\Sharing\github\gahara\course_web\NetworkConsole\Server\obj\Debug\MainWindow.baml
+D:\Sharing\github\gahara\course_web\NetworkConsole\Server\obj\Debug\SetPasswordWindow.baml
+D:\Sharing\github\gahara\course_web\NetworkConsole\Server\obj\Debug\MainWindow.g.cs
+D:\Sharing\github\gahara\course_web\NetworkConsole\Server\obj\Debug\SetPasswordWindow.g.cs
+D:\Sharing\github\gahara\course_web\NetworkConsole\Server\obj\Debug\App.g.cs
+D:\Sharing\github\gahara\course_web\NetworkConsole\Server\obj\Debug\Server_MarkupCompile.cache
+D:\Sharing\github\gahara\course_web\NetworkConsole\Server\obj\Debug\Server.g.resources
+D:\Sharing\github\gahara\course_web\NetworkConsole\Server\obj\Debug\Server.Properties.Resources.resources
+D:\Sharing\github\gahara\course_web\NetworkConsole\Server\obj\Debug\Server.csproj.GenerateResource.Cache
+D:\Sharing\github\gahara\course_web\NetworkConsole\Server\bin\Debug\Server.exe.config
+D:\Sharing\github\gahara\course_web\NetworkConsole\Server\bin\Debug\Server.exe
+D:\Sharing\github\gahara\course_web\NetworkConsole\Server\bin\Debug\Server.pdb
+D:\Sharing\github\gahara\course_web\NetworkConsole\Server\obj\Debug\Server.exe
+D:\Sharing\github\gahara\course_web\NetworkConsole\Server\obj\Debug\Server.pdb
+D:\Sharing\github\gahara\course_web\NetworkConsole\Server\obj\Debug\Server.csprojResolveAssemblyReference.cache

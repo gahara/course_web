@@ -1,0 +1,188 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace Client
+{
+    using NetworkConsole;
+    using System.Diagnostics;
+    using System.IO;
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        private ClientNetworkExplorer m_networkExplorer;
+        private Stack<string> m_path;
+
+        public class DisplayFile {
+            private string m_fileType = "";
+            private string m_name = "";
+            private string m_size = "";
+            private string m_date = "";
+
+            public string FileType { get { return m_fileType; } }
+            public string Name { get { return m_name; } }
+            public string Size { get { return m_size; } }
+            public string CreationDate { get { return m_date; } }
+
+            private DisplayFile(bool _isFile, string _name, long _size, DateTime _date, bool _isRoot) 
+            {
+                m_name = _name;
+                if (_isRoot)
+                {
+                    m_fileType = "vol";
+                    m_size = ""; m_date = "";
+                }
+                else {
+                    m_fileType = _isFile ? "file" : "dir";
+                    m_size = _size.ToString();
+                    m_date = _date.ToString();
+                }
+            }
+
+            private DisplayFile()
+            {
+                //parent direcetory
+                m_fileType = "dir";
+                m_name = "..";
+            }
+
+            public static DisplayFile[] Parse(List<FileObject> _fileObjects, bool _isRoot)
+            {
+                DisplayFile[] result;
+                if (_isRoot)
+                {
+                    result = _fileObjects.Select(x => new DisplayFile(x.FileType, x.Name, x.Size, x.CreationDate, _isRoot)).ToArray();
+                }
+                else
+                {
+                    List<DisplayFile> files = new List<DisplayFile>();
+                    files.Add(new DisplayFile());
+                    files.AddRange(_fileObjects.Select(x => new DisplayFile(x.FileType, x.Name, x.Size, x.CreationDate, _isRoot)));
+                    result = files.ToArray();
+                }
+                return result;
+            }
+        }
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            m_networkExplorer = new ClientNetworkExplorer();
+        }
+
+        private void itemConnect_Click(object sender, RoutedEventArgs e)
+        {
+            ConnectionWindow c = new ConnectionWindow(m_networkExplorer);
+            c.ShowDialog();
+            if (m_networkExplorer.IsConnected)
+            {
+                List<FileObject> files = null;
+                int err = 0;
+                if (m_networkExplorer.Ls("\\", ref files, ref err))
+                {
+                    m_path = new Stack<string>();
+                    m_path.Push("\\");
+                    bool isRoot = true;
+                    tblFiles.ItemsSource = DisplayFile.Parse(files, isRoot);
+                }
+            }
+        }
+
+        private DisplayFile[] ChangeDirectory(DisplayFile _d, ref int err)
+        {
+            DisplayFile[] result = null;
+            if (_d.Name == "..")
+            {
+                string curDir = m_path.Pop();
+                string parDir = m_path.Peek();
+                List<FileObject> rawFiles = null;
+                if (m_networkExplorer.Ls(parDir, ref rawFiles, ref err))
+                {
+                    bool isRoot = m_path.Count == 1 ? true : false;
+                    result = DisplayFile.Parse(rawFiles, isRoot);
+                }
+                else
+                {
+                    m_path.Push(curDir);
+                }
+            }
+            else
+            {
+                string curDir = m_path.Peek();
+                string nextDir = "";
+                if (m_path.Count != 1) { nextDir = curDir +  @"\"; }
+                nextDir += _d.Name;
+                List<FileObject> rawFiles = null;
+                if (m_networkExplorer.Ls(nextDir, ref rawFiles, ref err))
+                {
+                    result = DisplayFile.Parse(rawFiles, false);
+                    m_path.Push(nextDir);
+                }
+            }
+            return result;
+        }
+
+        private FileStream OpenMyFile(out string filename)
+        {
+            bool flag = true;
+            filename = "__tmp.txt";
+            FileStream result = null;
+            while(flag){
+                try
+                {
+                    result = File.Open(filename, FileMode.Create);
+                    flag = false;
+                }
+                catch {
+                    filename = "_" + filename;
+                }
+            }
+            return result;
+            
+        }
+
+        private void tblFiles_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var grid = sender as DataGrid;
+            DisplayFile d = (DisplayFile)grid.SelectedItem;
+            if (d != null)
+            {
+                int err = 0;
+                if (d.FileType == "vol" || d.FileType == "dir")
+                {
+                    DisplayFile[] files = ChangeDirectory(d, ref err);
+                    if (files != null) { grid.ItemsSource = files; }
+                }
+                else
+                {
+                    byte[] file;
+                    string strfile = "";
+                    string pathtofile = m_path.Peek() + "\\" + d.Name;
+                    string tmpfile;
+                    if (m_networkExplorer.Cat(pathtofile, ref strfile, ref err))
+                    {
+                        FileStream fs = OpenMyFile(out tmpfile);
+                        file = Encoding.Default.GetBytes(strfile);
+                        fs.Write(file, 0, file.Count());
+                        fs.Close();
+                        Process.Start("notepad", tmpfile);
+                    }
+                    
+                }
+            }
+        }
+    }
+}

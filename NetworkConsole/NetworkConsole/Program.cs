@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace NetworkConsole
 {
@@ -74,6 +75,7 @@ namespace NetworkConsole
                             }
                         }
                     }
+                    cl.Close();
                 }
             }
             else
@@ -85,31 +87,36 @@ namespace NetworkConsole
         }
     }
 
-    public class nserver
-    {
-        private ExplorerServer ex;
-        public nserver()
-        {
-            ex = new ExplorerServer();
-        }
-
-        public void start()
-        {
-           ex.Start();
-        }
-    }
-
     class Program
     {
+        private static void StartServer()
+        {
+            //Application ap = new Application();
+            //ap.Run(new ServerMainForm());
+        }
+
+        private static void StartClient()
+        {
+ 
+        }
 
         static void Main(string[] args)
         {
-            nserver s = new nserver();
+            /*nserver s = new nserver();
             nclient c = new nclient();
             Thread t = new Thread(s.start);
             t.Start();
+            c.start();*/
+            //ServerMainForm server = new ServerMainForm();
+            //server.Show();
+            Thread t1 = new Thread(StartServer);
+            t1.SetApartmentState(ApartmentState.STA);t1.Start();
+            
+            nclient c = new nclient();
+            Thread.Sleep(3000);
             c.start();
-
+            //Thread t2 = new Thread(StartClient);
+            //t2.Start();
 
             Console.ReadLine();
         }

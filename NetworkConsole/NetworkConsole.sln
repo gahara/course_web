@@ -3,6 +3,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkConsole", "NetworkConsole\NetworkConsole.csproj", "{401B2D5D-CD10-4E69-A342-22A18BB5F916}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csproj", "{BB1E144F-E631-49E8-92A7-FA918F46B7F2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{4176FB8D-15C9-4217-BF66-2C7113485839}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +17,14 @@ Global
 		{401B2D5D-CD10-4E69-A342-22A18BB5F916}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{401B2D5D-CD10-4E69-A342-22A18BB5F916}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{401B2D5D-CD10-4E69-A342-22A18BB5F916}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB1E144F-E631-49E8-92A7-FA918F46B7F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB1E144F-E631-49E8-92A7-FA918F46B7F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB1E144F-E631-49E8-92A7-FA918F46B7F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB1E144F-E631-49E8-92A7-FA918F46B7F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4176FB8D-15C9-4217-BF66-2C7113485839}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4176FB8D-15C9-4217-BF66-2C7113485839}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4176FB8D-15C9-4217-BF66-2C7113485839}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4176FB8D-15C9-4217-BF66-2C7113485839}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

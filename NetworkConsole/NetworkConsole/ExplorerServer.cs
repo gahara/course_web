@@ -52,18 +52,21 @@ namespace NetworkConsole
         private ServerTransferConnection m_connection;
         private ServerAuthorizationModule m_auth;
         private Object m_memory;
+        private string m_ID;
 
         public void SetPassword(string _password)
         {
             m_auth.SetPassword(_password);
         }
 
-        public ClientConnection(Socket _socket, List<Socket> _removeSocket, string _password)
+        public ClientConnection(Socket _socket, List<Socket> _removeSocket, string _password, int _clientNum)
         {
+            m_ID = "client " + _clientNum.ToString() + " :";
             m_removeSockets = _removeSocket;
             m_connection = new ServerTransferConnection(_socket);
             m_auth = new ServerAuthorizationModule(_password);
             m_memory = null;
+            //Log.Add(m_ID + "connected to server");
         }
 
         public void CloseConnection()
@@ -72,6 +75,7 @@ namespace NetworkConsole
             {
                 m_removeSockets.Add(m_connection.GetSocket());
             }
+           // Log.Add("close connection with " + m_ID);
         }
 
         public void Start()
@@ -84,7 +88,7 @@ namespace NetworkConsole
                 this.CloseConnection();
                 return;
             }
-            Debug.WriteLine("server got: " + msg);
+            //Log.Add("rcvd from " + m_ID + msg);
             bool isDelete = false;
             if (m_auth.isAuthorized)
             {
@@ -98,6 +102,7 @@ namespace NetworkConsole
             }
 
             ans = cmd.Run();
+            //Log.Add("send to " + m_ID + ans);
             isDelete |= !m_connection.Send(ans);
             if (isDelete) {this.CloseConnection();}
         }
@@ -153,6 +158,9 @@ namespace NetworkConsole
             ArrayList readyList;
             List<Socket> delCandidates = new List<Socket>();
             ClientConnection client;
+
+            //Log.Add("Server started");
+            int clientCount = 0;
             while (true)
             {
                 readyList = (ArrayList)socketList.Clone();
@@ -162,7 +170,7 @@ namespace NetworkConsole
                     if (s == (Socket)socketList[0])
                     {
                         Socket cl_sock = s.Accept();
-                        client = new ClientConnection(cl_sock, delCandidates, m_password);
+                        client = new ClientConnection(cl_sock, delCandidates, m_password, clientCount++);
                         m_clients.Add(cl_sock, client);
                         socketList.Add(cl_sock);
                     }
