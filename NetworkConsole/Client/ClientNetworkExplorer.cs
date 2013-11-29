@@ -27,7 +27,7 @@ namespace NetworkConsole
         public IPEndPoint[] BroadcastSearch()
         {
             m_broadcast.Start();
-            Thread.Sleep(2000);
+            Thread.Sleep(1000);
             return m_broadcast.Stop();
         }
 

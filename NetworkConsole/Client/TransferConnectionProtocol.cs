@@ -102,9 +102,9 @@ namespace NetworkConsole
     {
         private TransferConnectionProtocol() { }
 
-        public static int bufferSize = 1024;
+        public static int bufferSize = 4096;
         public static int receiveTimeout = 120000;
-        private static int m_maxMsgLength = 200;
+        private static int m_maxMsgLength = 1500;
         public static int sendTimeout = 6000;
 
         public static bool GetNextPackage(ref string _package, ref string _message)

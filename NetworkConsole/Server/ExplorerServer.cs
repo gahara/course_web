@@ -74,7 +74,8 @@ namespace NetworkConsole
             m_connection = new ServerTransferConnection(_socket);
             m_auth = new ServerAuthorizationModule(_password);
             m_memory = null;
-            AddLog("Клиент " + m_ID.ToString() + " подключился");
+            IPEndPoint endPoint = (IPEndPoint)_socket.RemoteEndPoint;
+            AddLog("Клиент " + m_ID.ToString() + " подключился" + ", адрес " + endPoint.Address.ToString() + ":" + endPoint.Port.ToString());
         }
 
         public void CloseConnection()
@@ -208,6 +209,7 @@ namespace NetworkConsole
                         Debug.WriteLine("Server in dictionary");
                         client = m_clients[s];
                         client.Start();
+                        //ThreadPool.QueueUserWorkItem(new WaitCallback(client.Start));
                     }
                     lock (delCandidates)
                     {

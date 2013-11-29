@@ -69,6 +69,7 @@ namespace NetworkConsole
                 }
                 catch { _port++; }
             }
+            m_connection.EnableBroadcast = true;
             m_serverAddrs = new HashSet<IPEndPoint>();
             Monitor.Enter(m_syncvar);
             this.BeginReceive();
@@ -76,7 +77,16 @@ namespace NetworkConsole
 
         private void SendAddrInfo()
         {
-            m_connection.Send(m_info, m_info.Length, new IPEndPoint(IPAddress.Broadcast, m_serverUDPPort));
+            foreach (IPAddress ip in (Dns.GetHostEntry(Dns.GetHostName()).AddressList))
+            {
+                if (ip.AddressFamily.ToString() == "InterNetwork")
+                {
+                    string strIp = ip.ToString();
+                    Match m = Regex.Match(strIp, @"(.*\.)\d+");
+                    strIp = m.Groups[1].Value + "255";
+                    m_connection.Send(m_info, m_info.Length, new IPEndPoint(IPAddress.Parse(strIp), m_serverUDPPort));
+                }
+            }
         }
 
         public IPEndPoint[] Stop()

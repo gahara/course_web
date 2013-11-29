@@ -47,7 +47,27 @@ namespace Client
                 }
                 else {
                     m_fileType = _isFile ? "file" : "dir";
-                    m_size = _size.ToString();
+                    if (_isFile) {
+                        string opt;
+                        if (_size < 10000)
+                            opt = " Б";
+                        else if (_size < 10000000)
+                        {
+                            _size /= 1024;
+                            opt = " КБ";
+                        }
+                        else if (_size < 10000000000)
+                        {
+                            _size /= 1024 * 1024;
+                            opt = " МБ";
+                        }
+                        else
+                        {
+                            _size /= 1024 * 1024 * 1024;
+                            opt = " ГБ";
+                        }
+                        m_size = _size.ToString() + opt;
+                    }
                     m_date = _date.ToString();
                 }
             }
@@ -85,6 +105,9 @@ namespace Client
 
         private void itemConnect_Click(object sender, RoutedEventArgs e)
         {
+            if (m_networkExplorer.IsConnected)
+                this.CloseConnection();
+
             ConnectionWindow c = new ConnectionWindow(m_networkExplorer);
             c.ShowDialog();
             if (m_networkExplorer.IsConnected)
@@ -168,6 +191,12 @@ namespace Client
                 }
                 else
                 {
+                    if (d.Size == "0 Б")
+                    {
+                        MessageBox.Show("Файл пуст", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
                     byte[] file;
                     string strfile = "";
                     string pathtofile = m_path.Peek() + "\\" + d.Name;
@@ -180,9 +209,40 @@ namespace Client
                         fs.Close();
                         Process.Start("notepad", tmpfile);
                     }
-                    
                 }
+                if (err == 100)
+                    HandleConnectionError();
+                else if (err != 0)
+                    HandleOtherError(err);
             }
+        }
+
+        private void HandleConnectionError()
+        {
+            this.CloseConnection();
+            MessageBox.Show("Ошибка соединения", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        private void CloseConnection()
+        {
+            m_networkExplorer.Close();
+            tblFiles.ItemsSource = null;
+        }
+
+        private void HandleOtherError(int err)
+        {
+            MessageBox.Show("Возникла ошибка, ну и хрен с ней, продолжаем работать " + err.ToString());
+        }
+
+        private void itemDisconnect_Click(object sender, RoutedEventArgs e)
+        {
+            if (m_networkExplorer.IsConnected)
+                this.CloseConnection();
+        }
+
+        private void itemHelp_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("notepad", "readme.txt");
         }
     }
 }

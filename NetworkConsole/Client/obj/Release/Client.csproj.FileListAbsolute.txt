@@ -1,0 +1,17 @@
+D:\Sharing\github\gahara\course_web\NetworkConsole\Client\bin\Release\Client.exe.config
+D:\Sharing\github\gahara\course_web\NetworkConsole\Client\bin\Release\Client.exe
+D:\Sharing\github\gahara\course_web\NetworkConsole\Client\bin\Release\Client.pdb
+D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Release\ConnectionWindow.baml
+D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Release\MainWindow.baml
+D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Release\PasswordWindow.baml
+D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Release\App.baml
+D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Release\ConnectionWindow.g.cs
+D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Release\MainWindow.g.cs
+D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Release\PasswordWindow.g.cs
+D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Release\App.g.cs
+D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Release\Client_MarkupCompile.cache
+D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Release\Client.g.resources
+D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Release\Client.Properties.Resources.resources
+D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Release\Client.csproj.GenerateResource.Cache
+D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Release\Client.exe
+D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Release\Client.pdb

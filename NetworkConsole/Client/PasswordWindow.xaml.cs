@@ -34,7 +34,7 @@ namespace Client
             int err = 0;
             if (m_explorer.Authorize(boxPassword.Password, ref err))
             {
-                MessageBox.Show("Авторизация успешна", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
+                //MessageBox.Show("Авторизация успешна", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
                 m_closeConnection = false;
                 Close();
             }

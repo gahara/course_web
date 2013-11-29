@@ -49,7 +49,7 @@ namespace NetworkConsole
 
         public static int codeErrCatBadPath = 300;
 
-        public static int filePackageSize = 100000; //only even
+        public static int filePackageSize = 300000; //only even
         
         //public static int codeErrLsWrongObjects = 202;
 

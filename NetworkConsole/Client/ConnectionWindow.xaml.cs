@@ -21,23 +21,6 @@ namespace Client
     /// </summary>
     public partial class ConnectionWindow : Window
     {
-        public class ServerAddr
-        {
-            public static ServerAddr[] ParseIPEndPoint(IPEndPoint[] _points)
-            {
-                return _points.Select((x) => new ServerAddr(x)).ToArray();
-            }
-
-            public ServerAddr(IPEndPoint _p)
-            {
-                Адрес = _p.Address;
-                Порт = _p.Port;
-            }
-
-            public IPAddress Адрес { get; set; }
-            public int Порт { get; set; }
-        }
-
         ClientNetworkExplorer m_explorer = null;
         public ConnectionWindow(ClientNetworkExplorer _explorer)
         {

@@ -16,6 +16,7 @@ namespace NetworkConsole
         public static string authRightPassword = "RightPass";
         public static string authWrongPassword = "WrongPass";
         public static string authWrongPasswordCloseConnection = "CloseWrongPass";
+        
 
         public static byte authMaxAttempts = 10;
 

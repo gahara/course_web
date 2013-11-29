@@ -17,7 +17,6 @@ namespace NetworkConsole
             public static AbsCommand ParseCommand(string _cmd, ref Object _memory, int _clientNum)
             {
                 AbsCommand cmd = null;
-                Debug.WriteLine("command received: " + _cmd);
                 if (_cmd.Substring(0, Constants.cmdLs.Length) == Constants.cmdLs)
                 {
                     cmd = new LsCommand(_cmd.Substring(Constants.cmdLs.Length));
@@ -151,7 +150,7 @@ namespace NetworkConsole
                         true,
                         _files[i].Name,
                         _files[i].Length,
-                        _files[i].LastWriteTime
+                        _files[i].CreationTime
                         ));
                 }
                 return result;
@@ -241,6 +240,7 @@ namespace NetworkConsole
                             m_fileLength = (new FileInfo(_filename)).Length;
                             m_fs = File.OpenRead(_filename);
                             m_bytesRead = 0;
+                            filename = _filename;
                             result = true;
                         }
                     }
@@ -279,8 +279,8 @@ namespace NetworkConsole
                 }
                 else
                 {
-                    this.LogServerRcvd("Запрос на получение следующей порции файла " + _param);
                     m_memory = (MemoryModule)_memory;
+                    this.LogServerRcvd("Запрос на получение следующей порции файла " + m_memory.filename);
                 }
 
             }
@@ -299,7 +299,10 @@ namespace NetworkConsole
                             { msg += Constants.ansCatLastEven; }
                         else { msg += Constants.ansCatNotLast; }
                         msg += Encoding.Default.GetString(m_memory.m_buf, 0, count);
-                        this.LogServerSend("Порция файла");
+                        if (!m_memory.isEnd)
+                            this.LogServerSend("Порция файла");
+                        else
+                            this.LogServerSend("Последняя порция файла");
                     }
                     else { msg = Constants.ansCatError + Constants.errUnknown; this.LogServerSend("Непредвиденная ошибка"); }
                 }

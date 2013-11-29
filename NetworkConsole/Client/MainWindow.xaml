@@ -5,17 +5,24 @@
     <Grid>
         <Menu x:Name="menuMain" HorizontalAlignment="Left" Height="25" VerticalAlignment="Top" Width="478">
             <MenuItem x:Name="itemConnection" Header="Подключения" Height="25">
-                <MenuItem x:Name="itemConnect" Header="Подключиться" HorizontalAlignment="Left" Width="145" Click="itemConnect_Click"/>
-                <MenuItem x:Name="itemDisconnect" Header="Отключиться" HorizontalAlignment="Left" Width="145"/>
+                <MenuItem x:Name="itemConnect" Header="Подключиться" HorizontalAlignment="Left" Width="180" Click="itemConnect_Click"/>
+                <MenuItem x:Name="itemDisconnect" Header="Отключиться" HorizontalAlignment="Left" Width="180" Click="itemDisconnect_Click"/>
             </MenuItem>
-            <MenuItem x:Name="itemHelp" Header="Помощь"/>
+            <MenuItem x:Name="itemHelp" Header="Помощь" Click="itemHelp_Click"/>
         </Menu>
-        <DataGrid x:Name="tblFiles" AutoGenerateColumns="False" HorizontalAlignment="Left" Margin="10,30,0,0" VerticalAlignment="Top" Height="275" Width="458" MouseDoubleClick="tblFiles_MouseDoubleClick">
+        <DataGrid x:Name="tblFiles" AutoGenerateColumns="False" HorizontalAlignment="Left" Margin="10,30,0,0" 
+                  VerticalAlignment="Top" 
+                  Height="275" Width="458" 
+                  MouseDoubleClick="tblFiles_MouseDoubleClick"
+                  ScrollViewer.CanContentScroll="True"
+                  ScrollViewer.VerticalScrollBarVisibility="Visible" HeadersVisibility="Column"
+                  >
+       
             <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding Path=FileType, Mode=OneWay}" Header="Тип"/>
-                <DataGridTextColumn Binding="{Binding Path=Name, Mode=OneWay}" Header="Имя"/>
-                <DataGridTextColumn Binding="{Binding Path=Size, Mode=OneWay}" Header="Размер"/>
-                <DataGridTextColumn Binding="{Binding Path=CreationDate, Mode=OneWay}" Header="Дата создания"/>
+                <DataGridTextColumn Binding="{Binding Path=FileType, Mode=OneWay}" Header="Тип" Width="30" />
+                <DataGridTextColumn Binding="{Binding Path=Name, Mode=OneWay}" Header="Имя" Width="189"/>
+                <DataGridTextColumn Binding="{Binding Path=Size, Mode=OneWay}" Header="Размер" Width="80"/>
+                <DataGridTextColumn Binding="{Binding Path=CreationDate, Mode=OneWay}" Header="Дата создания" Width="140"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

@@ -58,6 +58,7 @@ namespace Server
         private static void AppendString(string _str)
         {
             m_logBox.AppendText(">" + _str + "\r\n");
+            m_logBox.PageDown();
         }
     }
 

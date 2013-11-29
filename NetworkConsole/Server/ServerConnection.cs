@@ -36,8 +36,8 @@ namespace NetworkConsole
         {
             try
             {
-                m_connection = new UdpClient(Constants.serverUDPPort);
-                Log.Add("Броадкаст запущен");
+                m_connection = new UdpClient(new IPEndPoint(IPAddress.Any,Constants.serverUDPPort));
+                Log.Add("Броадкаст включен");
             }
             catch
             {
@@ -62,7 +62,7 @@ namespace NetworkConsole
             Debug.WriteLine("ip = " + ip.Address.ToString());
 
             Send(new IPEndPoint(ip.Address, port));
-            this.Start();
+            this.m_connection.BeginReceive(this.Receive, new object());
         }
 
         public void Start()
