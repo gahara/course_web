@@ -58,7 +58,6 @@ namespace NetworkConsole
         public ClientBroadcastProtocol(int _port, int _serverPort)
         {
             m_serverUDPPort = _serverPort;
-            m_info = Encoding.ASCII.GetBytes(_port.ToString());
             bool flag = true;
             while (flag)
             {
@@ -69,6 +68,7 @@ namespace NetworkConsole
                 }
                 catch { _port++; }
             }
+            m_info = Encoding.ASCII.GetBytes(_port.ToString());
             m_connection.EnableBroadcast = true;
             m_serverAddrs = new HashSet<IPEndPoint>();
             Monitor.Enter(m_syncvar);

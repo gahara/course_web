@@ -1,7 +1,7 @@
 ﻿<Window x:Name="ClientMainWindow" x:Class="Client.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Клиент" Height="344.681" Width="485.638">
+        Title="Клиент" Height="344.681" Width="485.638" ResizeMode="CanMinimize">
     <Grid>
         <Menu x:Name="menuMain" HorizontalAlignment="Left" Height="25" VerticalAlignment="Top" Width="478">
             <MenuItem x:Name="itemConnection" Header="Подключения" Height="25">
