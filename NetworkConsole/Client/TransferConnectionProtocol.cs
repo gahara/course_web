@@ -15,7 +15,7 @@ namespace NetworkConsole
     public abstract class AbsTransferConnection
     {
         protected Socket m_socket;
-        protected string m_type = "";
+        protected string m_type = ""; //debug info
         protected byte[] m_buffer = new byte[TransferConnectionProtocol.bufferSize];
 
         public Socket GetSocket()
@@ -107,6 +107,7 @@ namespace NetworkConsole
         private static int m_maxMsgLength = 1500;
         public static int sendTimeout = 6000;
 
+		// делим сообщения на пакеты
         public static bool GetNextPackage(ref string _package, ref string _message)
         {
             int len = m_maxMsgLength;
@@ -127,6 +128,7 @@ namespace NetworkConsole
             return !isLast;
         }
 
+		// цепляем к пакеты заголовок
         private static string WrapPackage(string _message, bool _isLastPackage)
         {
             /// SERVER MESSAGE STRUCT =  LENGTH_OF_CURRENT_MESSAGE + SPACE + 
@@ -143,6 +145,7 @@ namespace NetworkConsole
                 + _message);
         }
 
+		// отделяем заголовок от пакета
         public static bool ExtractMessage(ref string _rawData, ref string _result, ref bool _isLastPackage, ref bool _isError)
         {
             char serviceInfo = '0';

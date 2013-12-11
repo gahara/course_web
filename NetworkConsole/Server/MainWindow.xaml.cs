@@ -16,6 +16,7 @@ using System.Windows.Shapes;
 namespace Server
 {
     using NetworkConsole;
+    using System.IO;
     using System.Threading;
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -27,11 +28,20 @@ namespace Server
         private delegate void AddStr(string _text);
         private static AddStr m_delegateAppendStr;
         private static object m_sync = new object();
+        private static FileStream m_file;
 
         public static void Init(RichTextBox _logBox)
         {
             m_logBox = _logBox;
             m_delegateAppendStr = new AddStr(AppendString);
+            try
+            {
+                m_file = File.OpenWrite("log.txt");
+            }
+            catch
+            {
+                m_file = null;
+            }
         }
 
         public static void Close()
@@ -44,6 +54,9 @@ namespace Server
 
         public static void Add(string _logString)
         {
+            byte[] str = Encoding.Unicode.GetBytes(DateTime.Now.ToString() + " > " + _logString + "\r\n");
+            if (m_file != null)
+                m_file.Write(str, 0, str.Length);
             lock (m_sync)
             {
                 if (m_logBox == null)

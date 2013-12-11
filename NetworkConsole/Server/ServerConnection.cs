@@ -67,7 +67,8 @@ namespace NetworkConsole
 
         public void Start()
         {
-            m_connection.BeginReceive(this.Receive, new object());
+            if (m_connection != null)
+                m_connection.BeginReceive(this.Receive, new object());
         }
     }
 

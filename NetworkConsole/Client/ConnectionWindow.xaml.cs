@@ -19,9 +19,10 @@ namespace Client
     /// <summary>
     /// Interaction logic for ConnectionWindow.xaml
     /// </summary>
+	// окно поиска серверов и коннекта
     public partial class ConnectionWindow : Window
     {
-        ClientNetworkExplorer m_explorer = null;
+        ClientNetworkExplorer m_explorer = null; // explorer -через который мы делаем запросы к серверу
         public ConnectionWindow(ClientNetworkExplorer _explorer)
         {
             InitializeComponent();
@@ -59,6 +60,7 @@ namespace Client
                 return;
             }
 
+			// окно ввода пароля
             PasswordWindow passWindow = new PasswordWindow(m_explorer);
             passWindow.ShowDialog();
             if (m_explorer.IsConnected)
@@ -73,6 +75,7 @@ namespace Client
             this.Close();
         }
 
+		// обработка нажатия левой клавиши мыши по таблице(перекидываем инфу о серверах в textbox'ы)
         private void tblServers_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             var grid = sender as DataGrid;

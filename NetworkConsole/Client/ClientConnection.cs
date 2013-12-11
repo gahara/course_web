@@ -11,14 +11,16 @@ using System.Threading.Tasks;
 
 namespace NetworkConsole
 {
-    public class ClientTransferConnection : AbsTransferConnection
+    // клиентские добавки в протокол передачи данных(реализована функция connect и initsocket)
+	public class ClientTransferConnection : AbsTransferConnection
     {
         public ClientTransferConnection()
         {
             //debug
-            m_type = "Client";
+            m_type = "Client"; //debug info
         }
 
+		// инициализируем клиентский сокет, задаем таймаут и размер буфера
         private void InitSocket()
         {
             m_socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -27,6 +29,7 @@ namespace NetworkConsole
             m_socket.SendTimeout = TransferConnectionProtocol.sendTimeout;
         }
 
+	    // пытаемся приконектиться к серверу, если ок, возвращаем true
         public bool Connect(string _ip, int _port)
         {
             bool result = true;
@@ -44,17 +47,24 @@ namespace NetworkConsole
         }
     }
 
+	// класс протокола для броадкаста
     public class ClientBroadcastProtocol
     {
-        public string m_type;
-
+        public string m_type; // debug info
+		
+		// переменная синхронизации 
         private Object m_syncvar = new Object();
-        private static HashSet<IPEndPoint> m_serverAddrs;
-
+        // результирующая коллекция серверов
+		private static HashSet<IPEndPoint> m_serverAddrs;
+		//
         private UdpClient m_connection;
-        public byte[] m_info;
+        // информация, которую мы рассылаем через броадкаст
+		public byte[] m_info;
+		// порт, на котором сидит данный броадкаст
         private int m_serverUDPPort;
 
+		// конструктор: блок try catch используется для детектирования
+		//		того, что сокет уже кем-то занят, если такая ситуация происходит, то увеличиваем номер порта на 1 и пытаемся снова 
         public ClientBroadcastProtocol(int _port, int _serverPort)
         {
             m_serverUDPPort = _serverPort;
@@ -75,6 +85,9 @@ namespace NetworkConsole
             this.BeginReceive();
         }
 
+		// посылаем в броадкаст информацию(номер порта с которого мы послали)
+		// т.к. 255.255.255.255 не работает, то берем адрес каждого интерфейса и посылаем 
+		// броадкаст сообщение в подсеть каждого интерфейса(если адрес интерфейса 10.23.12.3 , то броадкаст адрес его подсети 10.23.12.255) 
         private void SendAddrInfo()
         {
             foreach (IPAddress ip in (Dns.GetHostEntry(Dns.GetHostName()).AddressList))
@@ -89,13 +102,17 @@ namespace NetworkConsole
             }
         }
 
+		// блокировка монитора и возврат массива серверов(то, что наброадкастили) 
         public IPEndPoint[] Stop()
         {
             Monitor.Enter(m_syncvar);
+			//todo: clear collection after getting array
             Debug.WriteLine("Entered to stop client");
             return m_serverAddrs.ToArray();
         }
 
+		// запуск броадкаста
+		// освобождение монитора, чтобы в результирующую коллекцию записывалась инфа о серверах
         public void Start()
         {
             Monitor.Exit(m_syncvar);
@@ -103,21 +120,26 @@ namespace NetworkConsole
             this.SendAddrInfo();
         }
 
+		// асинхронная операция начала приема
         private void BeginReceive()
         {
             m_connection.BeginReceive(this.Receive, new object());
         }
 
+		// callback BeginReceive'а, когда на сокет поступила информация и мы должны ее принять и обработать
+		// в конце вызываем снова BeginReceive, т.е. этот сокет крутиться вечно в отдельном потоке
         private void Receive(IAsyncResult _ar)
         {
             IPEndPoint ip = null;
             byte[] buf = m_connection.EndReceive(_ar, ref ip);
             string msg = Encoding.ASCII.GetString(buf);
             Debug.WriteLine("recvd:" + Encoding.ASCII.GetString(buf));
-            if (Monitor.TryEnter(m_syncvar))
+            // в монитор может войти только тогда, когда мы вызвали функцию Start и не вызвали функцию Stop
+			// в другие моменты времени этот блок игнорируется
+			if (Monitor.TryEnter(m_syncvar))
             {
                 Debug.WriteLine("Entered to locked client receive block");
-                //todo: regex server port 1234...
+				// если регэксп "server port" + server_port успешно распарсен, то добавляем в коллекцию 
                 Match m = Regex.Match(msg,(@"server port (\d+)"));
                 if (m.Success)
                 {

@@ -26,7 +26,8 @@ namespace Client
         private ClientNetworkExplorer m_networkExplorer;
         private Stack<string> m_path;
 
-        public class DisplayFile {
+        public class DisplayFile { // отображение файлов в таблице
+			// binding'и в xamle настроены напрямую к проперти объектов данного класса
             private string m_fileType = "";
             private string m_name = "";
             private string m_size = "";
@@ -79,6 +80,7 @@ namespace Client
                 m_name = "..";
             }
 
+			// перевод FileObject в DisplayFile
             public static DisplayFile[] Parse(List<FileObject> _fileObjects, bool _isRoot)
             {
                 DisplayFile[] result;
@@ -103,17 +105,22 @@ namespace Client
             m_networkExplorer = new ClientNetworkExplorer();
         }
 
+		// когда нажимаем на подключиться
         private void itemConnect_Click(object sender, RoutedEventArgs e)
         {
+			// если уже к кому-то подключены, то отключаемся
             if (m_networkExplorer.IsConnected)
                 this.CloseConnection();
-
+			
+			// открываем окошко соединений
             ConnectionWindow c = new ConnectionWindow(m_networkExplorer);
             c.ShowDialog();
+			// если мы соединились в том окне с сервером, то...
             if (m_networkExplorer.IsConnected)
             {
                 List<FileObject> files = null;
                 int err = 0;
+				// получаем список файлов корневой директории
                 if (m_networkExplorer.Ls("\\", ref files, ref err))
                 {
                     m_path = new Stack<string>();
@@ -124,10 +131,11 @@ namespace Client
             }
         }
 
+		// навигация по директориям
         private DisplayFile[] ChangeDirectory(DisplayFile _d, ref int err)
         {
             DisplayFile[] result = null;
-            if (_d.Name == "..")
+            if (_d.Name == "..") // если поднимаемся на уровень выше
             {
                 string curDir = m_path.Pop();
                 string parDir = m_path.Peek();
@@ -143,7 +151,7 @@ namespace Client
                 }
             }
             else
-            {
+            {  // если опускаемся на уровень ниже
                 string curDir = m_path.Peek();
                 string nextDir = "";
                 if (m_path.Count != 1) { nextDir = curDir +  @"\"; }
@@ -158,6 +166,7 @@ namespace Client
             return result;
         }
 
+		// открываем поток для записи скачанного файла
         private FileStream OpenMyFile(out string filename)
         {
             bool flag = true;
@@ -177,19 +186,20 @@ namespace Client
             
         }
 
+		// double click по таблице с файлами и папками
         private void tblFiles_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var grid = sender as DataGrid;
-            DisplayFile d = (DisplayFile)grid.SelectedItem;
+            DisplayFile d = (DisplayFile)grid.SelectedItem; // получаем элемент, по которому щелкнули
             if (d != null)
             {
                 int err = 0;
-                if (d.FileType == "vol" || d.FileType == "dir")
+                if (d.FileType == "vol" || d.FileType == "dir") // если папка, то это навигация по директориям
                 {
                     DisplayFile[] files = ChangeDirectory(d, ref err);
                     if (files != null) { grid.ItemsSource = files; }
                 }
-                else
+                else // иначе это просмотр файла
                 {
                     if (d.Size == "0 Б")
                     {
@@ -201,6 +211,7 @@ namespace Client
                     string strfile = "";
                     string pathtofile = m_path.Peek() + "\\" + d.Name;
                     string tmpfile;
+					// получаем с помощью networkexplorer файл, записываем в txt, открываем в отдельном процессе блокнот для просмотра этого файла
                     if (m_networkExplorer.Cat(pathtofile, ref strfile, ref err))
                     {
                         FileStream fs = OpenMyFile(out tmpfile);
@@ -233,13 +244,14 @@ namespace Client
         {
             MessageBox.Show("Возникла ошибка, ну и хрен с ней, продолжаем работать " + err.ToString());
         }
-
+		
+		// когда в меню нажимаем на Отключиться
         private void itemDisconnect_Click(object sender, RoutedEventArgs e)
         {
             if (m_networkExplorer.IsConnected)
                 this.CloseConnection();
         }
-
+		
         private void itemHelp_Click(object sender, RoutedEventArgs e)
         {
             Process.Start("notepad", "readme.txt");

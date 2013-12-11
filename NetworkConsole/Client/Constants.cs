@@ -13,13 +13,15 @@ namespace NetworkConsole
         public static int serverUDPPort = 43566;
         public static int clientUDPPort = 43561;
 
+		// тела сообщений авторизации(ответы от сервера)
         public static string authRightPassword = "RightPass";
         public static string authWrongPassword = "WrongPass";
         public static string authWrongPasswordCloseConnection = "CloseWrongPass";
         
-
+		// максимальное кол-во попыток ввода пароля, потом разрыв коннекта
         public static byte authMaxAttempts = 10;
 
+		// заголовки
         public static string ansCmdUnknownHeader = "ans unknown";
         public static string cmdLs = "ls ";
         public static string cmdCat = "cat ";
@@ -32,14 +34,15 @@ namespace NetworkConsole
 
         public static string ansCat = "ans cat ";
         public static string ansCatError = "ans err cat ";
-        public static string ansCatNotLast = "0 ";
-        public static string ansCatLastEven = "1 ";
-        public static string ansCatLastUneven = "2 ";
+        public static string ansCatNotLast = "0 "; // последний ли пакет текстового файла
+        public static string ansCatLastEven = "1 ";//debug
+        public static string ansCatLastUneven = "2 ";//debug
 
-
+		//тела сообщений при ошибках
         public static string errNoPath = "path";
         public static string errUnknown = "unknown";
 
+		// номера ошибок
         public static int codeErrBadConnection = 100;
         public static int codeErrBadAuthorization = 101;
         public static int codeErrVeryBadAuthorization = 102;
@@ -50,6 +53,7 @@ namespace NetworkConsole
 
         public static int codeErrCatBadPath = 300;
 
+		// максимальная длина файла // в клиенте не используется
         public static int filePackageSize = 800; //only even
         
         //public static int codeErrLsWrongObjects = 202;
@@ -60,6 +64,7 @@ namespace NetworkConsole
 
     public class FileObject
     {
+		// внутренний формат для представления файла
         public FileObject(bool _isFile, string _name, long _size, DateTime _date)
         {
             m_isFile = _isFile;
@@ -80,6 +85,8 @@ namespace NetworkConsole
 
         public override string ToString()
         {
+			// переводим всю инфу в строковый формат
+			// file = f|d + \t + filename + \t + filesize + \t + datetime
             string result = "";
             if (m_isFile) { result += 'f'; }
             else { result += 'd'; }
@@ -91,6 +98,7 @@ namespace NetworkConsole
             return result;
         }
 
+		// парсим список файлов из строкового представления
         public static List<FileObject> Parse(string _msg)
         {
             List<FileObject> files = new List<FileObject>();
