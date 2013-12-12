@@ -4,11 +4,18 @@
         Title="Клиент" Height="344.681" Width="485.638" ResizeMode="CanMinimize">
     <Grid>
         <Menu x:Name="menuMain" HorizontalAlignment="Left" Height="25" VerticalAlignment="Top" Width="478">
-            <MenuItem x:Name="itemConnection" Header="Подключения" Height="25">
+            <MenuItem x:Name="itemConnection" Header="Файл" Height="25">
                 <MenuItem x:Name="itemConnect" Header="Подключиться" HorizontalAlignment="Left" Width="180" Click="itemConnect_Click"/>
                 <MenuItem x:Name="itemDisconnect" Header="Отключиться" HorizontalAlignment="Left" Width="180" Click="itemDisconnect_Click"/>
+                
+                <MenuItem x:Name="itemExit" Header="Выход" HorizontalAlignment="Left" Width="180" Click="itemExit_Click"/>
             </MenuItem>
-            <MenuItem x:Name="itemHelp" Header="Помощь" Click="itemHelp_Click"/>
+            <MenuItem x:Name="itemService" Header="Сервис" Height="25">
+                <MenuItem />
+            </MenuItem>
+            <MenuItem x:Name="itemHelp" Header="Справка" Height="25">
+                <MenuItem x:Name="itemAbout" Header="Авторы" Height="25" Click="itemHelp_Click"/>
+            </MenuItem>
         </Menu>
         <DataGrid x:Name="tblFiles" AutoGenerateColumns="False" HorizontalAlignment="Left" Margin="10,30,0,0" 
                   VerticalAlignment="Top" 

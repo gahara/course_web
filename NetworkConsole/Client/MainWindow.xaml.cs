@@ -256,5 +256,10 @@ namespace Client
         {
             Process.Start("notepad", "readme.txt");
         }
+
+        private void itemExit_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
     }
 }
