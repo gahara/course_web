@@ -22,6 +22,7 @@ namespace Server
     /// Interaction logic for MainWindow.xaml
     /// </summary>
 
+	// статический класс журналирования
     public static class Log
     {
         private static RichTextBox m_logBox;
@@ -99,7 +100,7 @@ namespace Server
         {
             ___btnStartServer.IsEnabled = false;
             m_serverThread = new Thread(m_server.Start) { IsBackground = true };
-            m_serverThread.Start();
+            m_serverThread.Start(); // запуск сервера в отдельном потоке
         }
 
         private void Window_Closing_1(object sender, System.ComponentModel.CancelEventArgs e)

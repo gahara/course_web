@@ -17,8 +17,8 @@ namespace NetworkConsole
         public class ServerAuthorizationModule
         {
             private string m_password;
-            private byte m_attempts;
-            private byte m_maxAttempts;
+            private byte m_attempts; // кол-во попыток ввода пароля, которые совершил пользователь
+            private byte m_maxAttempts; // макс кол-во попыток
             private bool m_isAuthorized;
 
             public bool isAuthorized { get { return m_isAuthorized; } }
@@ -49,11 +49,11 @@ namespace NetworkConsole
 
     public partial class ClientConnection
     {
-        private List<Socket> m_removeSockets;
+        private List<Socket> m_removeSockets; // список сокетов, которые закрылись и их надо удалить из списков для select
         private ServerTransferConnection m_connection;
         private ServerAuthorizationModule m_auth;
-        private Object m_memory;
-        private int m_ID;
+        private Object m_memory; // здесь хранится инфа о файле, который запросил клиент
+        private int m_ID; // ID клиента
 
         private void AddLog(string _msg)
         {
@@ -64,8 +64,6 @@ namespace NetworkConsole
         {
             m_auth.SetPassword(_password);
         }
-
-        
 
         public ClientConnection(Socket _socket, List<Socket> _removeSocket, string _password, int _clientNum)
         {
@@ -92,33 +90,35 @@ namespace NetworkConsole
             string msg = "";
             string ans = "";
             AbsCommand cmd;
+			// если при приеме возникла ошибка, то отключаемся
             if (!m_connection.Receive(ref msg))
             {
                 this.CloseConnection();
                 return;
             }
-            bool isDelete = false;
-            if (m_auth.isAuthorized)
+			// нужно ли отключится в конце(накапливаем флаги, если хотя бы один true, то в конце закрываем коннекшн)
+            bool isDelete = false; 
+            if (m_auth.isAuthorized) // если клиент авторизован, то обрабатываем команды
             {
                 cmd = AbsCommand.ParseCommand(msg, ref m_memory, m_ID);
             }
             else 
-            {
+            { // если клиент не авторизован, то проверяем пароль, который он прислал
                 m_auth.Authorize(msg);
                 cmd = new AuthCommand(m_auth.isAuthorized, m_auth.isClose);
                 isDelete |= m_auth.isClose;
             }
 
-            ans = cmd.Run();
+            ans = cmd.Run(); // запуск команды и получение сообщения для отправки клиенту
             isDelete |= !m_connection.Send(ans);
-            if (isDelete) {this.CloseConnection();}
+            if (isDelete) {this.CloseConnection();} // закрываем конекшн, если isDelete
         }
     }
 
     public class ExplorerServer
     {
         private string m_password;
-        private Dictionary<Socket, ClientConnection> m_clients;
+        private Dictionary<Socket, ClientConnection> m_clients; // словарь ключ - сокет, значение - clientconnection
         private List<Socket> m_socketForRemove;
         private ServerBroadcastProtocol m_brConnection;
 
@@ -159,17 +159,18 @@ namespace NetworkConsole
                 }
             }
         }
-
+		
+		// инициализация сервера
         private ArrayList InitServer()
         {
-            ArrayList result = new ArrayList();
-            result.Add(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp));
+            ArrayList result = new ArrayList(); // arraylist для select
+            result.Add(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)); // добавляем в arraylist слушающий сокет
             this.InitListenSocket((Socket)result[0]);
             ((Socket)result[0]).Listen(10);
 
             m_password = "password";
 
-            m_brConnection.Start();
+            m_brConnection.Start(); // старт броадкаста
             return result;
         }
 
@@ -182,11 +183,12 @@ namespace NetworkConsole
                 m_password = value;
             }
         }
-
+		
+		// запуск сервера
         public void Start()
         {
-            ArrayList socketList = InitServer();
-            ArrayList readyList;
+            ArrayList socketList = InitServer(); // список сокетов для select
+            ArrayList readyList; // здесь список сокетов, на которые что-то поступило
             List<Socket> delCandidates = new List<Socket>();
             ClientConnection client;
 
@@ -198,21 +200,21 @@ namespace NetworkConsole
                 Socket.Select(readyList, null, null, 1000);
                 foreach (Socket s in readyList)
                 {
-                    if (s == (Socket)socketList[0])
+                    if (s == (Socket)socketList[0]) // если запрос на подключение, то создаем нового клиента
                     {
                         Socket cl_sock = s.Accept();
                         client = new ClientConnection(cl_sock, delCandidates, m_password, clientCount++);
                         m_clients.Add(cl_sock, client);
                         socketList.Add(cl_sock);
                     }
-                    else {
+                    else { // если не запрос на подключение, а какая-то команда от клиента, то получаем ее и запускаем обработку
                         Debug.WriteLine("Server in dictionary");
                         client = m_clients[s];
                         client.Start();
-                        //ThreadPool.QueueUserWorkItem(new WaitCallback(client.Start));
                     }
                     lock (delCandidates)
                     {
+						// если есть отключенные клиенты, то чистим от них socketList и  словарь
                         foreach (Socket delS in delCandidates)
                         {
                             m_clients.Remove(delS);

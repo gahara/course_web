@@ -13,33 +13,34 @@ namespace NetworkConsole
     {
         public abstract class AbsCommand
         {
-            private string m_client = "";
+            private string m_client = ""; // id клиента
+			// получение команды
             public static AbsCommand ParseCommand(string _cmd, ref Object _memory, int _clientNum)
             {
                 AbsCommand cmd = null;
-                if (_cmd.Substring(0, Constants.cmdLs.Length) == Constants.cmdLs)
+                if (_cmd.Substring(0, Constants.cmdLs.Length) == Constants.cmdLs) // если это Ls - запрос
                 {
                     cmd = new LsCommand(_cmd.Substring(Constants.cmdLs.Length));
                 }
-                else if (_cmd.Substring(0, Constants.cmdCat.Length) == Constants.cmdCat)
+                else if (_cmd.Substring(0, Constants.cmdCat.Length) == Constants.cmdCat) // если Cat запрос
                 {
                     int len = Constants.cmdCat.Length;
                     bool isFirst = true;
-                    if (_cmd[len] == Constants.optCatFirst[0])
+                    if (_cmd[len] == Constants.optCatFirst[0]) // если это запрос первой части файла
                         len += Constants.optCatFirst.Length;
-                    else
+                    else // иначе - запрос следующих частей файла
                     {
                         len += Constants.optCatNext.Length;
                         isFirst = false;
                     }
-                    cmd = new CatCommand(ref _memory, _cmd.Substring(len), isFirst);
+                    cmd = new CatCommand(ref _memory, _cmd.Substring(len), isFirst); // формирование команды
                 }
-                else
+                else // иначе - неизвестная команда
                 {
                     cmd = new UnknownCommand();
                 }
 
-                cmd.SetClientNum(_clientNum);
+                cmd.SetClientNum(_clientNum); // выставляем id клиента(для использования в логах)
                 
                 return cmd;
             }
@@ -68,7 +69,9 @@ namespace NetworkConsole
             public abstract string Run();
         }
 
-        public class AuthCommand : AbsCommand
+        public class AuthCommand : AbsCommand 
+		// команда авторизации(вся авторизация прошла в AuthorizationModule)
+		// здесь формируется ответ клиенту
         {
             private string m_result;
             public AuthCommand(bool _isAuthorized, bool _isCloseConnection)
@@ -84,7 +87,8 @@ namespace NetworkConsole
                 return m_result;
             }
         }
-
+		
+		// если получена неизвестная команда от клиента
         public class UnknownCommand : AbsCommand
         {
             public UnknownCommand() { }
@@ -97,40 +101,41 @@ namespace NetworkConsole
             }
         }
 
+		// команда просмотра директорий
         public abstract class AbsLsCommand : AbsCommand
         {
-            protected abstract List<FileObject> Ls(string _fullpath);
+            protected abstract List<FileObject> Ls(string _fullpath); // получение списка файлов
 
-            protected abstract List<FileObject> GetDrives();
+            protected abstract List<FileObject> GetDrives(); // получение списка томов(корневая директория)
 
             public override string Run()
             {
-                bool isGood = true;
+                bool isGood = true; // не возникли ли ошибки при выполнении команды
                 string header;
                 string package = "";
                 List<FileObject> files = null;
  	            try
                 {
-                    if (m_parameter == @"\")
+                    if (m_parameter == @"\") // если параметр - корневая директория
                     {
                         files = GetDrives();
                         this.LogServerRcvd("Запрос на просмотр корневой директории");
                     }
-                    else
+                    else // если параметр - не корневая директория
                     {
                         files = Ls(m_parameter);
                         this.LogServerRcvd("Запрос на просмотр директории " + m_parameter);
                     }
                 } catch (Exception ex) { isGood = false; }
-                if (files != null)
+                if (files != null) // если список файлов != null (если нету файлов в директории, то получим пустой список, но не null)
                 {
-                    header = Constants.ansLs;
+                    header = Constants.ansLs; // заголовок
                     foreach (FileObject f in files)
-                        package += f.ToString() + '\n';
+                        package += f.ToString() + '\n'; // упаковка в сообщение файлов
                     this.LogServerSend("Отправлен список файлов директории");
                 } else
                 {
-                    header = Constants.ansLsError;
+                    header = Constants.ansLsError; // заголовок ошибки
                     if (isGood) { header += Constants.errNoPath; this.LogServerSend("Неверный путь"); }
                     else { header += Constants.errUnknown; this.LogServerSend("Непредвиденная ошибка"); }
                 }
@@ -139,8 +144,10 @@ namespace NetworkConsole
             }
         }
 
+		// конкретная реализация LsCommand, таких функций как GetDrives и Ls
         public class LsCommand : AbsLsCommand
         {
+			// Перевод FileInfo в FileObject
             private List<FileObject> ParseObjects(FileInfo[] _files)
             {
                 List<FileObject> result = new List<FileObject>();
@@ -156,8 +163,10 @@ namespace NetworkConsole
                 return result;
             }
 
+			// перевод DirectroyInfo в FileObject
             private List<FileObject> ParseObjects(DirectoryInfo[] _dirs)
             {
+				
                 List<FileObject> result = new List<FileObject>();
                 for (int i = 0; i < _dirs.Count(); i++)
                 {
@@ -171,6 +180,7 @@ namespace NetworkConsole
                 return result;
             }
 
+			// получение списка томов
             protected override List<FileObject> GetDrives()
             {
                 List<FileObject> result = new List<FileObject>();
@@ -182,9 +192,9 @@ namespace NetworkConsole
                 return result;
             }
 
+			// получение списка файлов в директории
             protected override List<FileObject> Ls(string _fullpath)
             {
-                //todo: implement root search
                 DirectoryInfo dirInfo = new DirectoryInfo(_fullpath);
                 
                 if (!dirInfo.Exists)
@@ -206,23 +216,24 @@ namespace NetworkConsole
             }
         }
 
-
+		// команда передачи файла
         public class CatCommand : AbsCommand
         {
-
             public class MemoryModule {
 
                 private bool m_isPathExists;
                 private long m_fileLength;
-                private long m_bytesRead;
-                public string filename;
-                private FileStream m_fs;
-                public byte[] m_buf;
+                private long m_bytesRead; // сколько байтов файла прочитано 
+                public string filename; //
+                private FileStream m_fs; // поток чтения файла
+                public byte[] m_buf; // буфер, в который читается файл
 
                 public bool isPathExists { get { return m_isPathExists; } }
 
+				// прочитан ли файл до конца
                 public bool isEnd { get { return (m_bytesRead == m_fileLength && m_fileLength != 0); } } 
 
+				// конструктор
                 public MemoryModule(int _bufSize)
                 {
                     m_buf = new byte[_bufSize];
@@ -230,18 +241,19 @@ namespace NetworkConsole
                     m_bytesRead = 0;
                 }
 
+				// попытаться открыть запрошенный файл
                 public bool OpenFile(string _filename)
                 {
                     bool result = false;
                     try
                     {
-                        if (File.Exists(_filename))
+                        if (File.Exists(_filename)) // если файл существуетс
                         {
-                            m_fileLength = (new FileInfo(_filename)).Length;
-                            m_fs = File.OpenRead(_filename);
-                            m_bytesRead = 0;
+                            m_fileLength = (new FileInfo(_filename)).Length; // получить размер файла
+                            m_fs = File.OpenRead(_filename); // создать поток для чтения
+                            m_bytesRead = 0; // сброс прочитанного кол-ва байтов
                             filename = _filename;
-                            result = true;
+                            result = true; // файл открыт для чтения
                         }
                     }
                     catch (Exception ex) { Debug.WriteLine(ex.Message); }
@@ -249,7 +261,7 @@ namespace NetworkConsole
                     return result;
                 }
 
-                public bool ReadPortion(ref int _count, int _maxSize) // buf must be
+                public bool ReadPortion(ref int _count, int _maxSize) // чтение очередной порции файла
                 {
                     //only even _maxSize, because after we shall convert to utf8 string
                     bool result = false;
@@ -270,14 +282,14 @@ namespace NetworkConsole
             {
                 Debug.WriteLine("is first: " + _isFirst.ToString());
 
-                if (_isFirst)
+                if (_isFirst) // если запрошена первая порция файла, то инициализируем _memory и пытаемся открыть файл
                 {
                     this.LogServerRcvd("Запрос на получение первой порции файла " + _param);
                     if (_memory == null) { _memory = new MemoryModule(Constants.filePackageSize); }
                     m_memory = (MemoryModule)_memory;
                     m_memory.OpenFile(_param);
                 }
-                else
+                else // если следующая порция
                 {
                     m_memory = (MemoryModule)_memory;
                     this.LogServerRcvd("Запрос на получение следующей порции файла " + m_memory.filename);
@@ -285,20 +297,21 @@ namespace NetworkConsole
 
             }
 
+			// получение ответного сообщения на запрос
             public override string Run()
             {
                 string msg = "";
                 if (m_memory.isPathExists)
                 {
                     int count = 0;
-                    if (m_memory.ReadPortion(ref count, Constants.filePackageSize))
+                    if (m_memory.ReadPortion(ref count, Constants.filePackageSize)) // если успешно прочитан кусок файла
                     {
-                        msg = Constants.ansCat;
+                        msg = Constants.ansCat; // формируем заголовок
                         Debug.WriteLine("cat read :" + count.ToString() + " bytes");
                         if (m_memory.isEnd)
                             { msg += Constants.ansCatLastEven; }
                         else { msg += Constants.ansCatNotLast; }
-                        msg += Encoding.Default.GetString(m_memory.m_buf, 0, count);
+                        msg += Encoding.Default.GetString(m_memory.m_buf, 0, count); // тело сообщения
                         if (!m_memory.isEnd)
                             this.LogServerSend("Порция файла");
                         else

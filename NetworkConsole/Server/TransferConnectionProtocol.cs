@@ -132,7 +132,7 @@ namespace NetworkConsole
         private static string WrapPackage(string _message, bool _isLastPackage)
         {
             /// SERVER MESSAGE STRUCT =  LENGTH_OF_CURRENT_MESSAGE + SPACE + 
-            ///     CURRENT_NUMBER_OF_PACKAGE + SPACE + NUMBER_OF_PACKAGES + SPACE + MSG 
+            ///     ISLASTPACKAGE + SPACE + MSG 
             ///
             /// IMPORTANT: PACKAGE CUR NUMBER START VALUE = 1
             int num = _message.Count();

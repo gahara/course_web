@@ -28,13 +28,15 @@ namespace NetworkConsole
 
     public class ServerBroadcastProtocol
     {
+		// асинхронные receive
         protected UdpClient m_connection;
-        public string m_type;
+        public string m_type; //debug info
         public byte[] m_info;
         static int count = 0;
+		
         public ServerBroadcastProtocol(int _port)
         {
-            try
+            try // если порт свободен, то связываем сокет с этим портом, иначе - броадкаст отключен
             {
                 m_connection = new UdpClient(new IPEndPoint(IPAddress.Any,Constants.serverUDPPort));
                 Log.Add("Броадкаст включен");
