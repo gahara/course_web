@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 namespace NetworkConsole
 {
     using Server;
+    using System.Text.RegularExpressions;
     public partial class ClientConnection
     {
         public class ServerAuthorizationModule
@@ -21,6 +22,9 @@ namespace NetworkConsole
             private byte m_maxAttempts; // макс кол-во попыток
             private bool m_isAuthorized;
 
+            private string m_login = "";
+
+            public string Login { get { return m_login; } }
             public bool isAuthorized { get { return m_isAuthorized; } }
             public bool isClose { get { return (m_maxAttempts <= m_attempts && !m_isAuthorized); } }
 
@@ -40,7 +44,16 @@ namespace NetworkConsole
             public bool Authorize(string _param)
             {
                 m_attempts++;
-                if (_param == m_password) { m_isAuthorized = true; }
+                Match m = Regex.Match(_param, @" (\d+) (\d+) (.*)"); // we know that auth header is empty
+                if (m.Success)
+                {
+                    string tmp = m.Groups[3].Value;
+                    int passLen = int.Parse(m.Groups[1].Value);
+                    int loginLen = int.Parse(m.Groups[2].Value);
+                    string pass = tmp.Substring(0, passLen);
+                    m_login = tmp.Substring(passLen);
+                    if (pass == m_password) { m_isAuthorized = true; }
+                }
                 return m_isAuthorized;
             }
 
@@ -105,7 +118,7 @@ namespace NetworkConsole
             else 
             { // если клиент не авторизован, то проверяем пароль, который он прислал
                 m_auth.Authorize(msg);
-                cmd = new AuthCommand(m_auth.isAuthorized, m_auth.isClose);
+                cmd = new AuthCommand(m_auth.isAuthorized, m_auth.Login, m_auth.isClose);
                 isDelete |= m_auth.isClose;
             }
 

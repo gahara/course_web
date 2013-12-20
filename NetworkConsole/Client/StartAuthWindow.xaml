@@ -1,0 +1,13 @@
+﻿<Window x:Class="Client.StartAuthWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Авторизация" Height="222" Width="171" ResizeMode="NoResize">
+    <Grid>
+        <Label Content="Логин" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="boxLogin" HorizontalAlignment="Left" Height="23" Margin="10,41,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="139"/>
+        <Label Content="Пароль" HorizontalAlignment="Left" Margin="10,69,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="btnEnter" Content="Вход" HorizontalAlignment="Left" Margin="30,139,0,0" VerticalAlignment="Top" Width="100" Height="30" Click="btnEnter_Click"/>
+        <PasswordBox x:Name="boxPassword" HorizontalAlignment="Left" Margin="10,100,0,0" VerticalAlignment="Top" Width="139" Height="23"/>
+
+    </Grid>
+</Window>

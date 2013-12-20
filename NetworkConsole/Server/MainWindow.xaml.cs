@@ -37,7 +37,7 @@ namespace Server
             m_delegateAppendStr = new AddStr(AppendString);
             try
             {
-                m_file = File.OpenWrite("log.txt");
+                m_file = File.Create("log.txt");
             }
             catch
             {

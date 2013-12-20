@@ -74,12 +74,12 @@ namespace NetworkConsole
 		// здесь формируется ответ клиенту
         {
             private string m_result;
-            public AuthCommand(bool _isAuthorized, bool _isCloseConnection)
+            public AuthCommand(bool _isAuthorized, string _login, bool _isCloseConnection)
             {
                 this.LogServerRcvd("Запрос на авторизацию");
                 if (_isCloseConnection) { m_result = Constants.authWrongPasswordCloseConnection; this.LogServerSend("Неправильный пароль. Превышено кол-во попыток авторизации, закрытие соединения."); }
-                else if (_isAuthorized) { m_result = Constants.authRightPassword; this.LogServerSend("Авторизация успешна"); }
-                else { m_result = Constants.authWrongPassword; this.LogServerSend("Неправильный пароль"); }
+                else if (_isAuthorized) { m_result = Constants.authRightPassword; this.LogServerSend("Авторизация успешна. Клиент зашел в программу под логином: " + _login); }
+                else { m_result = Constants.authWrongPassword; this.LogServerSend("Неправильный пароль. Клиент зашел в программу под логином: " + _login); }
             }
 
             public override string Run()

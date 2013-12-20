@@ -101,8 +101,11 @@ namespace Client
 
         public MainWindow()
         {
+            StartAuthWindow w = new StartAuthWindow();
+            w.ShowDialog();
+            if (!w.IsOk) {this.Close();}
             InitializeComponent();
-            m_networkExplorer = new ClientNetworkExplorer();
+            m_networkExplorer = new ClientNetworkExplorer(w.Login);
         }
 
 		// когда нажимаем на подключиться

@@ -108,7 +108,9 @@ namespace NetworkConsole
             Monitor.Enter(m_syncvar);
 			//todo: clear collection after getting array
             Debug.WriteLine("Entered to stop client");
-            return m_serverAddrs.ToArray();
+            IPEndPoint[] result = m_serverAddrs.ToArray();
+            m_serverAddrs.Clear();
+            return result;
         }
 
 		// запуск броадкаста

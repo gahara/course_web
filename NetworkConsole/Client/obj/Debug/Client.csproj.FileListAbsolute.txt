@@ -16,3 +16,5 @@ D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Debug\Client.exe
 D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Debug\Client.pdb
 D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Debug\PasswordWindow.baml
 D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Debug\PasswordWindow.g.cs
+D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Debug\StartAuthWindow.baml
+D:\Sharing\github\gahara\course_web\NetworkConsole\Client\obj\Debug\StartAuthWindow.g.cs

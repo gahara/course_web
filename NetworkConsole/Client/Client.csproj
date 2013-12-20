@@ -57,6 +57,9 @@
     <Compile Include="PasswordWindow.xaml.cs">
       <DependentUpon>PasswordWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="StartAuthWindow.xaml.cs">
+      <DependentUpon>StartAuthWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="TransferConnectionProtocol.cs" />
     <Page Include="ConnectionWindow.xaml">
       <SubType>Designer</SubType>
@@ -80,6 +83,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="PasswordWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="StartAuthWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

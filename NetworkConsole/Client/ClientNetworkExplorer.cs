@@ -15,11 +15,12 @@ namespace NetworkConsole
         ClientTransferConnection m_connection; 
         ClientBroadcastProtocol m_broadcast;
         bool m_isConnected;
-        
+        private string m_login;
         public bool IsConnected { get { return m_isConnected; } }
 
-        public ClientNetworkExplorer()
+        public ClientNetworkExplorer(string _login)
         {
+            m_login = _login;
             m_connection = new ClientTransferConnection();
             m_broadcast = new ClientBroadcastProtocol(Constants.clientUDPPort, Constants.serverUDPPort);
             m_isConnected = false;
@@ -48,8 +49,9 @@ namespace NetworkConsole
         public bool Authorize(string _pass, ref int _err)
         {
             string ans = "";
+            string msg = this.GetAuthHeader() + " " + _pass.Length.ToString() + " " + m_login.Length.ToString() + " " + _pass + m_login;
 			// если возвращен false, то ошибка
-            if (!this.SendAndRecv(this.GetAuthHeader() + _pass, ref ans))
+            if (!this.SendAndRecv(msg, ref ans))
             {
                 _err = Constants.codeErrBadConnection;
                 return false;
